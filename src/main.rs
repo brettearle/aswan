@@ -1,4 +1,7 @@
-use std::env;
+use std::{
+    env,
+    io::{self, Read},
+};
 
 fn new_project(args: &Vec<String>) {
     //check args for project name and git link, ensure they are present
@@ -33,6 +36,14 @@ fn list_projects() {
 
 fn main() {
     let args: Vec<String> = env::args().collect();
+    let mut command = String::new();
+
+    io::stdin()
+        .read_line(&mut command)
+        .expect("Failed to read line");
+
+    println!("Command: {command}");
+
     let director = get_director(&args);
     //check args for director command
     //if not present, print error message and exit
