@@ -3,8 +3,8 @@ use std::env;
 fn new_project(args: &Vec<String>) {
     //check args for project name and git link, ensure they are present
     //if not, print error message and exit
-    if args.len() < 3 || args.len() > 3 {
-        println!("Usage: aswan <project_name> <git_link>");
+    if args.len() < 4 || args.len() > 4 {
+        println!("Usage: aswan <new/ls> <project_name> <git_link>");
         return;
     }
     let input = Project::new(&args);
@@ -40,18 +40,6 @@ fn main() {
         DirectorArguments::New => new_project(&args),
         DirectorArguments::Ls => list_projects(),
     }
-    let input = Project::new(&args);
-    //write project to local file
-    let file = match std::fs::write(
-        "projects.txt",
-        format!("{}, {}\n", input.project_name, input.git_link),
-    ) {
-        Ok(file) => file,
-        Err(e) => panic!("Error writing to file: {}", e),
-    };
-
-    println!("Project Name: {}", input.project_name);
-    println!("Git Link: {}", input.git_link);
 }
 
 struct Project {
@@ -62,8 +50,8 @@ struct Project {
 impl Project {
     fn new(args_vec: &Vec<String>) -> Project {
         Project {
-            project_name: args_vec[1].clone(),
-            git_link: args_vec[2].clone(),
+            project_name: args_vec[2].clone(),
+            git_link: args_vec[3].clone(),
         }
     }
 }
