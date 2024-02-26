@@ -1,13 +1,10 @@
-use std::{
-    env,
-    io::{self, Read},
-};
+use std::env;
 
 fn new_project(args: &Vec<String>) {
     //check args for project name and git link, ensure they are present
     //if not, print error message and exit
     if args.len() < 4 || args.len() > 4 {
-        println!("Usage: aswan <new/ls> <project_name> <git_link>");
+        println!("Usage: aswan <new> <project_name> <git_link>");
         return;
     }
     let input = Project::new(&args);
@@ -36,20 +33,19 @@ fn list_projects() {
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let mut command = String::new();
-
-    io::stdin()
-        .read_line(&mut command)
-        .expect("Failed to read line");
-
-    println!("Command: {command}");
-
-    let director = get_director(&args);
+    if args.len() < 2 {
+        println!("Usage: aswan <new/ls>");
+        return;
+    }
+    let director: DirectorArguments = get_director(&args);
     //check args for director command
     //if not present, print error message and exit
     match director {
         DirectorArguments::New => new_project(&args),
         DirectorArguments::Ls => list_projects(),
+        DirectorArguments::Unknown => {
+            println!("Usage: aswan <new/ls>");
+        }
     }
 }
 
@@ -70,12 +66,13 @@ impl Project {
 enum DirectorArguments {
     New,
     Ls,
+    Unknown,
 }
 
 fn get_director(args: &Vec<String>) -> DirectorArguments {
     match args[1].as_str() {
         "new" => DirectorArguments::New,
         "ls" => DirectorArguments::Ls,
-        _ => panic!("Usage: aswan <new/ls>"),
+        _ => DirectorArguments::Unknown,
     }
 }
