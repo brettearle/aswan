@@ -1,7 +1,6 @@
 use std::env;
 
 fn new_project(args: &Vec<String>) {
-    //adsada
     //check args for project name and git link, ensure they are present
     //if not, print error message and exit
     if args.len() < 4 || args.len() > 4 {
