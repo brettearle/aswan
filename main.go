@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"flag"
+	"fmt"
+)
 
 
 type item struct{
@@ -16,6 +19,12 @@ func newItem(desc string)(*item, error){
 }
 
 func main() {
+	//Flag Decleration
+	newFlag := flag.String("n", "Item Description", "New Item: Value is Item Description")
+	flag.Parse()
+
+	//Exploration
+	fmt.Printf("newFlag: %s", *newFlag )
 	i,err := newItem("tested")
 	if (err != nil) {
 		fmt.Println("Item broke")
