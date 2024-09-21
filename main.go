@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/brettearle/aswan/db"
 )
 
 type ItemList []*Item
@@ -113,7 +115,12 @@ func main() {
 	}
 	if *listFlag {
 		fmt.Println("All Items -")
-		fmt.Printf("%v", testList)
+		fmt.Printf("%v\n", testList)
 	}
+	testDB, err := db.Init("./test.db")
+	if err != nil {
+		fmt.Println("failed to init DB")
+	}
+	fmt.Printf("DB: %+v", testDB)
 
 }
