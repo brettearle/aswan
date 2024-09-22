@@ -15,6 +15,7 @@ type aswanDB struct {
 	path string
 	db *sql.DB
 }
+
 func (db *aswanDB) createTodo(todo *item) (sql.Result, error) {
 	res, err := db.db.ExecContext(context.Background(), `INSERT INTO todo (desc, done) VALUES (?,?);`, todo.done, todo.desc,)
 	if err != nil {
@@ -23,6 +24,25 @@ func (db *aswanDB) createTodo(todo *item) (sql.Result, error) {
 	}
 	return res, nil
 }
+
+func (db *aswanDB) deleteTodo(id int) (sql.Result, error) {
+	res, err := db.db.ExecContext(context.Background(), `DELETE FROM todo WHERE id = ?;`, id,)
+	if err != nil {
+		fmt.Printf("sql Error: %v\n", err)
+		return res, errors.New("could not delete todo")
+	}
+	return res, nil
+}
+
+func (db *aswanDB) updateTodo(todo *item) (sql.Result, error) {
+	res, err := db.db.ExecContext(context.Background(), `UPDATE todo SET desc = ?, done = ? WHERE id = ?;`,todo.desc, todo.done, todo.id,)
+	if err != nil {
+		fmt.Printf("sql Error: %v\n", err)
+		return res, errors.New("could not update todo")
+	}
+	return res, nil
+}
+
 func (db *aswanDB) getAllTodos() (*itemList, error) {
 	rows, err := db.db.Query("SELECT * FROM todo")
 	if err != nil {
@@ -34,7 +54,9 @@ func (db *aswanDB) getAllTodos() (*itemList, error) {
 	for rows.Next() {
 		var item item
 		// TODO rows scan needs error handling
-		rows.Scan(&item.desc, &item.done)
+		if err := rows.Scan(&item.id, &item.desc, &item.done); err != nil {
+			fmt.Printf("Scan Error: %v\n", err)
+		}
 		res = append(res, &item)
 	}
 	return &res, nil

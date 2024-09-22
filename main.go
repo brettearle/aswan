@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -11,6 +10,7 @@ import (
 type itemList []*item
 
 type item struct {
+	id int
 	done bool
 	desc string
 }
@@ -27,34 +27,39 @@ func newItem(desc string) *item {
 	}
 	return i
 }
-func getItem(desc string, iL itemList) (*item, error) {
-	for _, item := range iL {
-		if item.desc == desc {
-			return item, nil
-		}
-	}
-	return nil, errors.New("item not in list")
-}
 
 func (i *item) create(db *aswanDB) {
 	res, err := db.createTodo(i)	
 	if err != nil {
 		fmt.Printf("error: %v", err)
 	}
+	id, err := res.LastInsertId()
+	if err != nil {
+		fmt.Printf("error: %v", err)
+	}
+	i.id = int(id)
 	fmt.Printf("Created: %+v\n with res: %v\n", i, res)
 }
 
-func (i *item) tickUntick() {
+func (i *item) delete(db *aswanDB) {
+	res, err := db.deleteTodo(i.id)	
+	if err != nil {
+		fmt.Printf("error: %v", err)
+	}
+	fmt.Printf("Deleted: %+v\n with res: %v\n", i, res)
+}
+
+func (i *item) tickUntick(db *aswanDB) {
 	if i.done {
 		i.done = false
 	} else {
 		i.done = true
 	}
-	fmt.Printf("Ticked: %+v\n", i)
-}
-
-func (i *item) print() {
-	fmt.Printf("Current Item: %+v\n", i)
+	res, err := db.updateTodo(i)	
+	if err != nil {
+		fmt.Printf("error: %v", err)
+	}
+	fmt.Printf("Updated: %+v\n with res: %v\n", i, res)
 }
 
 func main() {
@@ -102,14 +107,13 @@ func main() {
 	//Exploration
 	if *tickFlag {
 		i := newItem(itemDesc)
-		i.tickUntick()
-		i.print()
+		i.create(testDB)
+		i.tickUntick(testDB)
 	}
 	if *newFlag {
 		ni := newItem(itemDesc)
-		ni.tickUntick()
 		ni.create(testDB)
-		ni.print()
+		ni.tickUntick(testDB)
 	}
 	if *listFlag {
 		res, err := testDB.getAllTodos()
@@ -117,8 +121,11 @@ func main() {
 			fmt.Printf("Error: %v\n", err)
 		}
 		fmt.Println("All Items -")
-		fmt.Println(*res)
+		for _, val := range *res {
+			fmt.Printf("%v: %v\n", val.id, val)
+			// val.delete(testDB)
+		}
 	}
-	fmt.Printf("DB: %+v", testDB)
+	fmt.Printf("DB: %+v\n", testDB)
 }
 
