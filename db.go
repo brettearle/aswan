@@ -13,11 +13,11 @@ var db *sql.DB
 
 type aswanDB struct {
 	path string
-	db *sql.DB
+	db   *sql.DB
 }
 
 func (db *aswanDB) createTodo(todo *item) (sql.Result, error) {
-	res, err := db.db.ExecContext(context.Background(), `INSERT INTO todo (desc, done) VALUES (?,?);`, todo.done, todo.desc,)
+	res, err := db.db.ExecContext(context.Background(), `INSERT INTO todo (desc, done) VALUES (?,?);`, todo.desc, todo.done)
 	if err != nil {
 		fmt.Printf("sql Error: %v\n", err)
 		return res, errors.New("could not create todo")
@@ -26,7 +26,7 @@ func (db *aswanDB) createTodo(todo *item) (sql.Result, error) {
 }
 
 func (db *aswanDB) deleteTodo(id int) (sql.Result, error) {
-	res, err := db.db.ExecContext(context.Background(), `DELETE FROM todo WHERE id = ?;`, id,)
+	res, err := db.db.ExecContext(context.Background(), `DELETE FROM todo WHERE id = ?;`, id)
 	if err != nil {
 		fmt.Printf("sql Error: %v\n", err)
 		return res, errors.New("could not delete todo")
@@ -35,7 +35,7 @@ func (db *aswanDB) deleteTodo(id int) (sql.Result, error) {
 }
 
 func (db *aswanDB) updateTodo(todo *item) (sql.Result, error) {
-	res, err := db.db.ExecContext(context.Background(), `UPDATE todo SET desc = ?, done = ? WHERE id = ?;`,todo.desc, todo.done, todo.id,)
+	res, err := db.db.ExecContext(context.Background(), `UPDATE todo SET desc = ?, done = ? WHERE id = ?;`, todo.desc, todo.done, todo.id)
 	if err != nil {
 		fmt.Printf("sql Error: %v\n", err)
 		return res, errors.New("could not update todo")
@@ -61,11 +61,25 @@ func (db *aswanDB) getAllTodos() (*itemList, error) {
 	}
 	return &res, nil
 }
+func (db *aswanDB) getTodoName(desc string) (*item, error) {
+	rows, err := db.db.Query("SELECT * FROM todo WHERE desc = ?", desc)
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		return nil, err
+	}
+	defer rows.Close()
+	var res item
+	if err := rows.Scan(&res.id, &res.desc, &res.done); err != nil {
+		fmt.Printf("Scan Error: %v\n", err)
+		return nil, err
+	}
+	return &res, nil
+}
 
 func newAswanDB(path string, DB *sql.DB) *aswanDB {
 	db := &aswanDB{
 		path: path,
-		db: DB,
+		db:   DB,
 	}
 	return db
 }
@@ -75,7 +89,7 @@ func dbInit(path string) (*aswanDB, error) {
 	db, err = sql.Open("sqlite", path)
 	if err != nil {
 		fmt.Printf("Failed to open db %v\n", err)
-		return nil,err
+		return nil, err
 	}
 	_, err = db.ExecContext(
 		context.Background(),
@@ -87,8 +101,8 @@ func dbInit(path string) (*aswanDB, error) {
 	)
 	if err != nil {
 		fmt.Printf("Failed to create %v\n", err)
-		return nil,err
+		return nil, err
 	}
-	r := newAswanDB(path, db)	
+	r := newAswanDB(path, db)
 	return r, nil
 }
