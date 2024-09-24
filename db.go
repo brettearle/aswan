@@ -61,20 +61,20 @@ func (db *aswanDB) getAllTodos() (*itemList, error) {
 	}
 	return &res, nil
 }
-func (db *aswanDB) getTodoName(desc string) (*item, error) {
-	rows, err := db.db.Query("SELECT * FROM todo WHERE desc = ?", desc)
-	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		return nil, err
-	}
-	defer rows.Close()
-	var res item
-	if err := rows.Scan(&res.id, &res.desc, &res.done); err != nil {
-		fmt.Printf("Scan Error: %v\n", err)
-		return nil, err
-	}
-	return &res, nil
-}
+// func (db *aswanDB) getTodoName(desc string) (*item, error) {
+// 	rows, err := db.db.Query("SELECT * FROM todo WHERE desc = ?", desc)
+// 	if err != nil {
+// 		fmt.Printf("Error: %v\n", err)
+// 		return nil, err
+// 	}
+// 	defer rows.Close()
+// 	var res item
+// 	if err := rows.Scan(&res.id, &res.desc, &res.done); err != nil {
+// 		fmt.Printf("Scan Error: %v\n", err)
+// 		return nil, err
+// 	}
+// 	return &res, nil
+// }
 
 func newAswanDB(path string, DB *sql.DB) *aswanDB {
 	db := &aswanDB{

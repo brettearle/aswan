@@ -8,6 +8,11 @@ import (
 	"strings"
 )
 
+const (
+	DONE = "✅";
+	NOT_DONE = "❌"
+)
+
 type itemList []*item
 
 type item struct {
@@ -41,11 +46,11 @@ func (i *item) create(db *aswanDB) {
 }
 
 func (i *item) delete(db *aswanDB) {
-	res, err := db.deleteTodo(i.id)
+	_, err := db.deleteTodo(i.id)
 	if err != nil {
 		fmt.Printf("error: %v", err)
 	}
-	fmt.Printf("Deleted: %+v\n with res: %v\n", i, res)
+	fmt.Printf("\nDeleted: %+v", i)
 }
 
 func (i *item) tickUntick(db *aswanDB) {
@@ -73,7 +78,11 @@ func renderList(db *aswanDB) (*itemList, error) {
 	}
 	fmt.Println("")
 	for i, todo := range *ls {
-		fmt.Printf("%d: %s %t\n", i, todo.desc, todo.done)
+		if todo.done {
+		fmt.Printf("%d: %s %s\n", i, todo.desc, DONE)
+		} else {
+		fmt.Printf("%d: %s %s\n", i, todo.desc, NOT_DONE)
+	}
 	}
 
 	return ls, nil
@@ -83,29 +92,30 @@ func main() {
 	//DB Initialization
 	testDB, err := dbInit("./test.db")
 	if err != nil {
-		fmt.Println("failed to init DB")
+		fmt.Println("\nfailed to init DB")
 	}
-	//Initial State and Screen
-	todosList, err := renderList(testDB)
+	//Initial State
+	todosList, err := testDB.getAllTodos()
 	if err != nil {
-		fmt.Println("failed to get todos")
+		fmt.Println("\nfailed to get todos")
 		return
 	}
 	//Flag Decleration
 	itemFlags := flag.NewFlagSet("Todo items", flag.ContinueOnError)
-	newFlag := itemFlags.Bool("n", false, "New Item")
-	tickFlag := itemFlags.Bool("t", false, "Completes an item")
-	// listFlag := itemFlags.Bool("ls", false, "List items")
+	newFlag := itemFlags.Bool("n", false, "New todo")
+	tickFlag := itemFlags.Bool("t", false, "Completes a todo")
+	deleteFlag := itemFlags.Bool("d", false, "Deletes a todo")
+	clearFlag := itemFlags.Bool("clear", false, "Deletes all todos")
 	//Commands
 	commands := os.Args
 	if len(commands) == 1 {
 		return
 	}
-	_, _, flagFirst := strings.Cut(commands[1], "-")
-
+	_, clear, flagFirst := strings.Cut(commands[1], "-")
+	 
 	//Handles structure
-	if flagFirst {
-		fmt.Println("Please provide item string first")
+	if flagFirst && clear != "clear" {
+		fmt.Println("\nPlease provide item string first")
 		fmt.Println("example: `CMD> aswan 'im a item' -n -t`")
 		itemFlags.PrintDefaults()
 		return
@@ -115,11 +125,15 @@ func main() {
 		switch commands[1] {
 		//cases for commands go here
 		case "help":
-			fmt.Println("help not implemented")
+			fmt.Println("\nhelp not implemented")
 		case "dbPath":
-			fmt.Println("path to DB")
+			fmt.Println("\npath to DB")
 		case "timer":
-			fmt.Println("timer not yet implemented")
+			fmt.Println("\ntimer not yet implemented")
+		case "-clear":
+			itemFlags.Parse(commands[1:]) 
+		case "ls":
+			renderList(testDB)
 		default:
 			itemFlags.Parse(commands[2:])
 		}
@@ -137,14 +151,16 @@ func main() {
 		})
 		if i == -1 {
 			fmt.Println("\nNo item by that name")
+			return
 		}
 		(*todosList)[i].tickUntick(testDB)
 		todosList, err = renderList(testDB)
 		if err != nil {
-			fmt.Println("Couldn't get updated list")
+			fmt.Println("\nCouldn't get updated list")
 			return
 		}
 	}
+
 	if *newFlag {
 		i := slices.IndexFunc(*todosList, func(t *item) bool {
 			return t.desc == itemDesc
@@ -157,20 +173,33 @@ func main() {
 		ni.create(testDB)
 		_, err = renderList(testDB)
 		if err != nil {
-			fmt.Println("Couldn't get updated list")
+			fmt.Println("\nCouldn't get updated list")
 			return
 		}
 	}
-	// if *listFlag {
-	// 	res, err := testDB.getAllTodos()
-	// 	if err != nil {
-	// 		fmt.Printf("Error: %v\n", err)
-	// 	}
-	// 	fmt.Println("All Items -")
-	// 	for _, val := range *res {
-	// 		fmt.Printf("%v: %v\n", val.id, val)
-	// 		// val.delete(testDB)
-	// 	}
-	// }
-	// fmt.Printf("DB: %+v\n", testDB)
+	if *deleteFlag {
+		i := slices.IndexFunc(*todosList, func(t *item) bool {
+			return t.desc == itemDesc
+		})
+		if i == -1 {
+			fmt.Println("\nNo item by that name")
+			return
+		}
+		(*todosList)[i].delete(testDB)
+		_, err = renderList(testDB)
+		if err != nil {
+			fmt.Println("\nCouldn't get updated list")
+			return
+		}
+	}
+	if *clearFlag {
+		for _, td := range *todosList {
+			td.delete(testDB)
+		}
+		_, err = renderList(testDB)
+		if err != nil {
+			fmt.Println("\nCouldn't get updated list")
+			return
+		}
+	}
 }
