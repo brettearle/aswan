@@ -5,11 +5,12 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
 
 	_ "modernc.org/sqlite"
 )
 
-var db *sql.DB
 
 type aswanDB struct {
 	path string
@@ -62,21 +63,6 @@ func (db *aswanDB) getAllTodos() (*itemList, error) {
 	return &res, nil
 }
 
-// func (db *aswanDB) getTodoName(desc string) (*item, error) {
-// 	rows, err := db.db.Query("SELECT * FROM todo WHERE desc = ?", desc)
-// 	if err != nil {
-// 		fmt.Printf("Error: %v\n", err)
-// 		return nil, err
-// 	}
-// 	defer rows.Close()
-// 	var res item
-// 	if err := rows.Scan(&res.id, &res.desc, &res.done); err != nil {
-// 		fmt.Printf("Scan Error: %v\n", err)
-// 		return nil, err
-// 	}
-// 	return &res, nil
-// }
-
 func newAswanDB(path string, DB *sql.DB) *aswanDB {
 	db := &aswanDB{
 		path: path,
@@ -85,13 +71,34 @@ func newAswanDB(path string, DB *sql.DB) *aswanDB {
 	return db
 }
 
+func getDBPath() string {
+    homeDir, err := os.UserHomeDir()
+    if err != nil {
+        panic(err)
+    }
+
+    // Create the .aswan directory path
+    dbDir := filepath.Join(homeDir, ".aswan")
+    
+    // Ensure the .aswan directory exists
+    if err := os.MkdirAll(dbDir, os.ModePerm); err != nil {
+        panic(err)
+    }
+
+    // Define the SQLite database file path
+    dbFile := "aswan.db"
+    return filepath.Join(dbDir, dbFile)
+}
+
+
 func dbInit(path string) (*aswanDB, error) {
-	var err error
-	db, err = sql.Open("sqlite", path)
+	//Init Sqlite
+	db, err := sql.Open("sqlite", path)
 	if err != nil {
 		fmt.Printf("Failed to open db %v\n", err)
 		return nil, err
 	}
+	//Init Tables
 	_, err = db.ExecContext(
 		context.Background(),
 		`CREATE TABLE IF NOT EXISTS todo (
@@ -104,6 +111,7 @@ func dbInit(path string) (*aswanDB, error) {
 		fmt.Printf("Failed to create %v\n", err)
 		return nil, err
 	}
+	//Return new aswan db
 	r := newAswanDB(path, db)
 	return r, nil
 }

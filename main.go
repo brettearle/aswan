@@ -91,12 +91,15 @@ func renderList(db *aswanDB) (*itemList, error) {
 
 func main() {
 	//DB Initialization
-	testDB, err := dbInit("./test.db")
+	dbPath := getDBPath()
+	DB, err := dbInit(dbPath)
 	if err != nil {
-		fmt.Println("\nfailed to init DB")
+		panic("no DB able to be initialized")
 	}
+	defer DB.db.Close()
+
 	//Initial State
-	todosList, err := testDB.getAllTodos()
+	todosList, err := DB.getAllTodos()
 	if err != nil {
 		fmt.Println("\nfailed to get todos")
 		return
@@ -110,7 +113,7 @@ func main() {
 	//Commands
 	commands := os.Args
 	if len(commands) == 1 {
-		renderList(testDB)
+		renderList(DB)
 		return
 	}
 	_, clear, flagFirst := strings.Cut(commands[1], "-")
@@ -130,7 +133,7 @@ func main() {
 			fmt.Println("\nhelp not implemented")
 			return
 		case "dbPath":
-			fmt.Println("\npath to DB")
+			fmt.Printf("\n%s\n", DB.path)
 			return
 		case "timer":
 			fmt.Println("\ntimer not yet implemented")
@@ -138,7 +141,7 @@ func main() {
 		case "-clear":
 			itemFlags.Parse(commands[1:])
 		case "ls":
-			renderList(testDB)
+			renderList(DB)
 			return
 		default:
 			itemFlags.Parse(commands[2:])
@@ -165,12 +168,12 @@ func main() {
 			return
 		}
 		if i == -1 && possibleInt != -1 {
-			(*todosList)[possibleInt].tickUntick(testDB)
+			(*todosList)[possibleInt].tickUntick(DB)
 		}
 		if possibleInt == -1 && i != -1 {
-			(*todosList)[i].tickUntick(testDB)
+			(*todosList)[i].tickUntick(DB)
 		}
-		todosList, err = renderList(testDB)
+		todosList, err = renderList(DB)
 		if err != nil {
 			fmt.Println("\nCouldn't get updated list")
 			return
@@ -186,8 +189,8 @@ func main() {
 			return
 		}
 		ni := newItem(itemDesc)
-		ni.create(testDB)
-		_, err = renderList(testDB)
+		ni.create(DB)
+		_, err = renderList(DB)
 		if err != nil {
 			fmt.Println("\nCouldn't get updated list")
 			return
@@ -197,8 +200,7 @@ func main() {
 	if *deleteFlag {
 		possibleInt, err := strconv.ParseInt(itemDesc, 10, 64)
 		if err != nil {
-			fmt.Printf("err: %v\n", err)
-			possibleInt = possibleInt - 1
+			possibleInt = -1
 		}
 		i := slices.IndexFunc(*todosList, func(t *item) bool {
 			return t.desc == itemDesc
@@ -210,13 +212,13 @@ func main() {
 		}
 
 		if i == -1 && possibleInt != -1 {
-			(*todosList)[possibleInt].delete(testDB)
+			(*todosList)[possibleInt].delete(DB)
 		}
 
 		if possibleInt == -1 && i != -1 {
-			(*todosList)[i].delete(testDB)
+			(*todosList)[i].delete(DB)
 		}
-		_, err = renderList(testDB)
+		_, err = renderList(DB)
 		if err != nil {
 			fmt.Println("\nCouldn't get updated list")
 			return
@@ -225,9 +227,9 @@ func main() {
 
 	if *clearFlag {
 		for _, td := range *todosList {
-			td.delete(testDB)
+			td.delete(DB)
 		}
-		_, err = renderList(testDB)
+		_, err = renderList(DB)
 		if err != nil {
 			fmt.Println("\nCouldn't get updated list")
 			return
