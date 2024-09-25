@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"os"
 	"slices"
+	"strconv"
 	"strings"
 )
 
 const (
-	DONE = "✅";
+	DONE     = "✅"
 	NOT_DONE = "❌"
 )
 
@@ -50,7 +51,7 @@ func (i *item) delete(db *aswanDB) {
 	if err != nil {
 		fmt.Printf("error: %v", err)
 	}
-	fmt.Printf("\nDeleted: %+v", i)
+	fmt.Printf("\nDeleted: %+v\n", i)
 }
 
 func (i *item) tickUntick(db *aswanDB) {
@@ -79,10 +80,10 @@ func renderList(db *aswanDB) (*itemList, error) {
 	fmt.Println("")
 	for i, todo := range *ls {
 		if todo.done {
-		fmt.Printf("%d: %s %s\n", i, todo.desc, DONE)
+			fmt.Printf("%d: %s %s\n", i, todo.desc, DONE)
 		} else {
-		fmt.Printf("%d: %s %s\n", i, todo.desc, NOT_DONE)
-	}
+			fmt.Printf("%d: %s %s\n", i, todo.desc, NOT_DONE)
+		}
 	}
 
 	return ls, nil
@@ -109,10 +110,11 @@ func main() {
 	//Commands
 	commands := os.Args
 	if len(commands) == 1 {
+		renderList(testDB)
 		return
 	}
 	_, clear, flagFirst := strings.Cut(commands[1], "-")
-	 
+
 	//Handles structure
 	if flagFirst && clear != "clear" {
 		fmt.Println("\nPlease provide item string first")
@@ -126,14 +128,18 @@ func main() {
 		//cases for commands go here
 		case "help":
 			fmt.Println("\nhelp not implemented")
+			return
 		case "dbPath":
 			fmt.Println("\npath to DB")
+			return
 		case "timer":
 			fmt.Println("\ntimer not yet implemented")
+			return
 		case "-clear":
-			itemFlags.Parse(commands[1:]) 
+			itemFlags.Parse(commands[1:])
 		case "ls":
 			renderList(testDB)
+			return
 		default:
 			itemFlags.Parse(commands[2:])
 		}
@@ -146,14 +152,24 @@ func main() {
 
 	//Exploration
 	if *tickFlag {
+		possibleInt, err := strconv.ParseInt(itemDesc, 10, 64)
+		if err != nil {
+			possibleInt = -1
+		}
+
 		i := slices.IndexFunc(*todosList, func(t *item) bool {
 			return t.desc == itemDesc
 		})
-		if i == -1 {
+		if i == -1 && possibleInt == -1 {
 			fmt.Println("\nNo item by that name")
 			return
 		}
-		(*todosList)[i].tickUntick(testDB)
+		if i == -1 && possibleInt != -1 {
+			(*todosList)[possibleInt].tickUntick(testDB)
+		}
+		if possibleInt == -1 && i != -1 {
+			(*todosList)[i].tickUntick(testDB)
+		}
 		todosList, err = renderList(testDB)
 		if err != nil {
 			fmt.Println("\nCouldn't get updated list")
@@ -161,7 +177,7 @@ func main() {
 		}
 	}
 
-	if *newFlag {
+	if *newFlag || !*tickFlag && !*deleteFlag && !*newFlag && !*clearFlag {
 		i := slices.IndexFunc(*todosList, func(t *item) bool {
 			return t.desc == itemDesc
 		})
@@ -177,21 +193,36 @@ func main() {
 			return
 		}
 	}
+
 	if *deleteFlag {
+		possibleInt, err := strconv.ParseInt(itemDesc, 10, 64)
+		if err != nil {
+			fmt.Printf("err: %v\n", err)
+			possibleInt = possibleInt - 1
+		}
 		i := slices.IndexFunc(*todosList, func(t *item) bool {
 			return t.desc == itemDesc
 		})
-		if i == -1 {
+
+		if i == -1 && possibleInt == -1 {
 			fmt.Println("\nNo item by that name")
 			return
 		}
-		(*todosList)[i].delete(testDB)
+
+		if i == -1 && possibleInt != -1 {
+			(*todosList)[possibleInt].delete(testDB)
+		}
+
+		if possibleInt == -1 && i != -1 {
+			(*todosList)[i].delete(testDB)
+		}
 		_, err = renderList(testDB)
 		if err != nil {
 			fmt.Println("\nCouldn't get updated list")
 			return
 		}
 	}
+
 	if *clearFlag {
 		for _, td := range *todosList {
 			td.delete(testDB)

@@ -61,6 +61,7 @@ func (db *aswanDB) getAllTodos() (*itemList, error) {
 	}
 	return &res, nil
 }
+
 // func (db *aswanDB) getTodoName(desc string) (*item, error) {
 // 	rows, err := db.db.Query("SELECT * FROM todo WHERE desc = ?", desc)
 // 	if err != nil {
