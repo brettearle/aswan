@@ -80,9 +80,9 @@ func renderList(db *aswanDB) (*itemList, error) {
 	fmt.Println("")
 	for i, todo := range *ls {
 		if todo.done {
-			fmt.Printf("%d: %s %s\n", i, todo.desc, DONE)
+			fmt.Printf("%s %d: %s \n", DONE, i, todo.desc)
 		} else {
-			fmt.Printf("%d: %s %s\n", i, todo.desc, NOT_DONE)
+			fmt.Printf("%s %d: %s \n", NOT_DONE, i, todo.desc)
 		}
 	}
 
