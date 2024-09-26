@@ -14,27 +14,27 @@ const (
 	NOT_DONE = "❌"
 )
 
-type itemList []*item
+type todoList []*todo
 
-type item struct {
+type todo struct {
 	id   int
 	done bool
 	desc string
 }
 
-func (t item) String() string {
+func (t todo) String() string {
 	return fmt.Sprintf("{desc: %v, done: %v } \n", t.desc, t.done)
 }
 
-func newItem(desc string) *item {
-	i := &item{
+func newTodo(desc string) *todo {
+	i := &todo{
 		done: false,
 		desc: desc,
 	}
 	return i
 }
 
-func (i *item) create(db *aswanDB) {
+func (i *todo) create(db *aswanDB) {
 	res, err := db.createTodo(i)
 	if err != nil {
 		fmt.Printf("error: %v", err)
@@ -46,7 +46,7 @@ func (i *item) create(db *aswanDB) {
 	i.id = int(id)
 }
 
-func (i *item) delete(db *aswanDB) {
+func (i *todo) delete(db *aswanDB) {
 	_, err := db.deleteTodo(i.id)
 	if err != nil {
 		fmt.Printf("error: %v", err)
@@ -54,7 +54,7 @@ func (i *item) delete(db *aswanDB) {
 	fmt.Printf("\nDeleted: %+v\n", i)
 }
 
-func (i *item) tickUntick(db *aswanDB) {
+func (i *todo) tickUntick(db *aswanDB) {
 	if i.done {
 		i.done = false
 	} else {
@@ -67,7 +67,7 @@ func (i *item) tickUntick(db *aswanDB) {
 }
 
 // List all and Print
-func renderList(db *aswanDB) (*itemList, error) {
+func renderList(db *aswanDB) (*todoList, error) {
 	ls, err := db.getAllTodos()
 	if err != nil {
 		fmt.Println("failed to get list")
@@ -160,7 +160,7 @@ func main() {
 			possibleInt = -1
 		}
 
-		i := slices.IndexFunc(*todosList, func(t *item) bool {
+		i := slices.IndexFunc(*todosList, func(t *todo) bool {
 			return t.desc == itemDesc
 		})
 		if i == -1 && possibleInt == -1 {
@@ -181,14 +181,14 @@ func main() {
 	}
 
 	if *newFlag || !*tickFlag && !*deleteFlag && !*newFlag && !*clearFlag {
-		i := slices.IndexFunc(*todosList, func(t *item) bool {
+		i := slices.IndexFunc(*todosList, func(t *todo) bool {
 			return t.desc == itemDesc
 		})
 		if i != -1 {
 			fmt.Printf("\nItem already exists: %s\n", itemDesc)
 			return
 		}
-		ni := newItem(itemDesc)
+		ni := newTodo(itemDesc)
 		ni.create(DB)
 		_, err = renderList(DB)
 		if err != nil {
@@ -202,7 +202,7 @@ func main() {
 		if err != nil {
 			possibleInt = -1
 		}
-		i := slices.IndexFunc(*todosList, func(t *item) bool {
+		i := slices.IndexFunc(*todosList, func(t *todo) bool {
 			return t.desc == itemDesc
 		})
 
