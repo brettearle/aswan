@@ -11,7 +11,6 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-
 type aswanDB struct {
 	path string
 	db   *sql.DB
@@ -72,24 +71,23 @@ func newAswanDB(path string, DB *sql.DB) *aswanDB {
 }
 
 func getDBPath() string {
-    homeDir, err := os.UserHomeDir()
-    if err != nil {
-        panic(err)
-    }
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
 
-    // Create the .aswan directory path
-    dbDir := filepath.Join(homeDir, ".aswan")
-    
-    // Ensure the .aswan directory exists
-    if err := os.MkdirAll(dbDir, os.ModePerm); err != nil {
-        panic(err)
-    }
+	// Create the .aswan directory path
+	dbDir := filepath.Join(homeDir, ".aswan")
 
-    // Define the SQLite database file path
-    dbFile := "aswan.db"
-    return filepath.Join(dbDir, dbFile)
+	// Ensure the .aswan directory exists
+	if err := os.MkdirAll(dbDir, os.ModePerm); err != nil {
+		panic(err)
+	}
+
+	// Define the SQLite database file path
+	dbFile := "aswan.db"
+	return filepath.Join(dbDir, dbFile)
 }
-
 
 func dbInit(path string) (*aswanDB, error) {
 	//Init Sqlite
