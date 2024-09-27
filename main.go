@@ -34,27 +34,32 @@ func newTodo(desc string) *todo {
 	return i
 }
 
-func (i *todo) create(db *aswanDB) {
+func (i *todo) create(db *aswanDB) (bool, error) {
 	res, err := db.createTodo(i)
 	if err != nil {
 		fmt.Printf("error: %v", err)
+		return false, err
 	}
 	id, err := res.LastInsertId()
 	if err != nil {
 		fmt.Printf("error: %v", err)
+		return false, err
 	}
 	i.id = int(id)
+	return true, err
 }
 
-func (i *todo) delete(db *aswanDB) {
+func (i *todo) delete(db *aswanDB) (bool, error)  {
 	_, err := db.deleteTodo(i.id)
 	if err != nil {
 		fmt.Printf("error: %v", err)
+		return false, err
 	}
 	fmt.Printf("\nDeleted: %+v\n", i)
+	return true, nil
 }
 
-func (i *todo) tickUntick(db *aswanDB) {
+func (i *todo) tickUntick(db *aswanDB) (bool, error) {
 	if i.done {
 		i.done = false
 	} else {
@@ -62,8 +67,10 @@ func (i *todo) tickUntick(db *aswanDB) {
 	}
 	_, err := db.updateTodo(i)
 	if err != nil {
-		fmt.Printf("error: %v", err)
+		fmt.Printf("error: %v", err);
+		return false, err
 	}
+		return true, nil
 }
 
 // List all and Print
@@ -88,6 +95,8 @@ func renderList(db *aswanDB) (*todoList, error) {
 
 	return ls, nil
 }
+
+//Clear Don
 
 func main() {
 	//DB Initialization

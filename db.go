@@ -53,9 +53,9 @@ func (db *aswanDB) getAllTodos() (*todoList, error) {
 	var res todoList
 	for rows.Next() {
 		var item todo
-		// TODO rows scan needs error handling
 		if err := rows.Scan(&item.id, &item.desc, &item.done); err != nil {
 			fmt.Printf("Scan Error: %v\n", err)
+			return nil, err
 		}
 		res = append(res, &item)
 	}
