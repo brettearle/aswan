@@ -189,9 +189,8 @@ func flagService(
 	return flags, nil
 }
 
-func run() (success, error) {
+func run(dbPath string) (success, error) {
 	//DB Initialization
-	dbPath := getDBPath()
 	DB, err := dbInit(dbPath)
 	if err != nil {
 		panic("no DB able to be initialized")
@@ -211,10 +210,6 @@ func run() (success, error) {
 		return false, err
 	}
 	//-- End Flag Decleration --
-
-	//Arguments
-	
-	//-- End Args --
 
 	//Exploration
 	if *flags.tickFlag {
@@ -303,7 +298,7 @@ func run() (success, error) {
 }
 
 func main() {
-	_, err := run()
+	_, err := run(getDBPath())
 	if err != nil {
 		fmt.Printf("\nRun failed with: %v", err)
 	}
