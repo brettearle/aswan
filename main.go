@@ -79,6 +79,7 @@ func (i *todo) tickUntick(db *aswanDB) (success, error) {
 type RenderList func(db *aswanDB) (ls *todoList, err error)
 
 func renderList(db *aswanDB) (*todoList, error) {
+	callClear()
 	ls, err := db.getAllTodos()
 	if err != nil {
 		fmt.Println("failed to get list")
@@ -96,7 +97,6 @@ func renderList(db *aswanDB) (*todoList, error) {
 			fmt.Printf("%s %d: %s \n", NOT_DONE, i, todo.desc)
 		}
 	}
-
 	return ls, nil
 }
 
@@ -202,9 +202,7 @@ func run(DB *aswanDB) (success, error) {
 		fmt.Println("\nFailed to init flags")
 		return false, err
 	}
-	//-- End Flag Decleration --
-
-	//Exploration
+	//Handlers
 	if *flags.tickFlag {
 		possibleInt, err := strconv.ParseInt(flags.nameArg, 10, 64)
 		if err != nil {
