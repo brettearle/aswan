@@ -189,14 +189,7 @@ func flagService(
 	return flags, nil
 }
 
-func run(dbPath string) (success, error) {
-	//DB Initialization
-	DB, err := dbInit(dbPath)
-	if err != nil {
-		panic("no DB able to be initialized")
-	}
-	defer DB.db.Close()
-
+func run(DB *aswanDB) (success, error) {
 	//Initial State
 	todosList, err := DB.getAllTodos()
 	if err != nil {
@@ -298,7 +291,15 @@ func run(dbPath string) (success, error) {
 }
 
 func main() {
-	_, err := run(getDBPath())
+	//DB Initialization
+	DB, err := dbInit(getDBPath())
+	if err != nil {
+		panic("no DB able to be initialized")
+	}
+	defer DB.db.Close()
+
+	//RUN RUN RUN 
+	_, err = run(DB)
 	if err != nil {
 		fmt.Printf("\nRun failed with: %v", err)
 	}
