@@ -14,6 +14,8 @@ const (
 	NOT_DONE = "❌"
 )
 
+type success bool
+
 type todoList []*todo
 
 type todo struct {
@@ -34,7 +36,7 @@ func newTodo(desc string) *todo {
 	return i
 }
 
-func (i *todo) create(db *aswanDB) (bool, error) {
+func (i *todo) create(db *aswanDB) (success, error) {
 	res, err := db.createTodo(i)
 	if err != nil {
 		fmt.Printf("error: %v", err)
@@ -49,7 +51,7 @@ func (i *todo) create(db *aswanDB) (bool, error) {
 	return true, err
 }
 
-func (i *todo) delete(db *aswanDB) (bool, error)  {
+func (i *todo) delete(db *aswanDB) (success, error) {
 	_, err := db.deleteTodo(i.id)
 	if err != nil {
 		fmt.Printf("error: %v", err)
@@ -59,7 +61,7 @@ func (i *todo) delete(db *aswanDB) (bool, error)  {
 	return true, nil
 }
 
-func (i *todo) tickUntick(db *aswanDB) (bool, error) {
+func (i *todo) tickUntick(db *aswanDB) (success, error) {
 	if i.done {
 		i.done = false
 	} else {
@@ -67,13 +69,15 @@ func (i *todo) tickUntick(db *aswanDB) (bool, error) {
 	}
 	_, err := db.updateTodo(i)
 	if err != nil {
-		fmt.Printf("error: %v", err);
+		fmt.Printf("error: %v", err)
 		return false, err
 	}
-		return true, nil
+	return true, nil
 }
 
 // List all and Print
+type RenderList func(db *aswanDB) (ls *todoList, err error)
+
 func renderList(db *aswanDB) (*todoList, error) {
 	ls, err := db.getAllTodos()
 	if err != nil {
@@ -96,9 +100,96 @@ func renderList(db *aswanDB) (*todoList, error) {
 	return ls, nil
 }
 
-//Clear Don
+// Clear Done
+func clearDone(db *aswanDB, ls *todoList, render RenderList) (success, error) {
+	for _, item := range *ls {
+		if item.done {
+			_, err := item.delete(db)
+			if err != nil {
+				fmt.Printf("failed to delete item: %+v.\n Error: %v", item, err)
+				return false, err
+			}
+		}
+	}
+	render(db)
+	return true, nil
+}
 
-func main() {
+type todoFlags struct {
+	nameArg string
+	itemFlags  *flag.FlagSet
+	newFlag    *bool
+	tickFlag   *bool
+	deleteFlag *bool
+	clearFlag  *bool
+}
+
+func newTodoFlags(desc string) *todoFlags {
+	iF := flag.NewFlagSet("Todo items", flag.ContinueOnError)
+	return &todoFlags{
+		itemFlags:  iF,
+		newFlag:    iF.Bool("n", false, "New todo"),
+		tickFlag:   iF.Bool("t", false, "Completes a todo"),
+		deleteFlag: iF.Bool("d", false, "Deletes a todo"),
+		clearFlag:  iF.Bool("clear", false, "Deletes all todos"),
+		nameArg: desc,
+	}
+}
+
+func flagService(
+	args []string,
+	DB *aswanDB,
+	todosList *todoList,
+) (*todoFlags, error) {
+
+	var err error
+	//Commands
+	commands := args
+	if len(commands) == 1 {
+		renderList(DB)
+		return newTodoFlags(""), err
+	}
+
+	flags := newTodoFlags(args[1])
+
+	_, clear, flagFirst := strings.Cut(commands[1], "-")
+
+	//Handles structure
+	if flagFirst && clear != "clear" {
+		fmt.Println("\nPlease provide item string first")
+		fmt.Println("example: `CMD> aswan 'im a item' -n -t`")
+		flags.itemFlags.PrintDefaults()
+		return nil, err
+	}
+
+	if len(commands) > 1 {
+		switch commands[1] {
+		//cases for commands go here
+		case "help":
+			fmt.Println("\nhelp not implemented")
+			return flags, nil
+		case "dbPath":
+			fmt.Printf("\n%s\n", DB.path)
+			return flags, nil
+		case "timer":
+			fmt.Println("\ntimer not yet implemented")
+			return flags, nil
+		case "rmDone":
+			clearDone(DB, todosList, renderList)
+			return flags, nil
+		case "-clear":
+			flags.itemFlags.Parse(commands[1:])
+		case "ls":
+			renderList(DB)
+			return flags, nil
+		default:
+			flags.itemFlags.Parse(commands[2:])
+		}
+	}
+	return flags, nil
+}
+
+func run() (success, error) {
 	//DB Initialization
 	dbPath := getDBPath()
 	DB, err := dbInit(dbPath)
@@ -111,70 +202,33 @@ func main() {
 	todosList, err := DB.getAllTodos()
 	if err != nil {
 		fmt.Println("\nfailed to get todos")
-		return
+		return false, err
 	}
 	//Flag Decleration
-	itemFlags := flag.NewFlagSet("Todo items", flag.ContinueOnError)
-	newFlag := itemFlags.Bool("n", false, "New todo")
-	tickFlag := itemFlags.Bool("t", false, "Completes a todo")
-	deleteFlag := itemFlags.Bool("d", false, "Deletes a todo")
-	clearFlag := itemFlags.Bool("clear", false, "Deletes all todos")
-	//Commands
-	commands := os.Args
-	if len(commands) == 1 {
-		renderList(DB)
-		return
-	}
-	_, clear, flagFirst := strings.Cut(commands[1], "-")
-
-	//Handles structure
-	if flagFirst && clear != "clear" {
-		fmt.Println("\nPlease provide item string first")
-		fmt.Println("example: `CMD> aswan 'im a item' -n -t`")
-		itemFlags.PrintDefaults()
-		return
-	}
-
-	if len(commands) > 1 {
-		switch commands[1] {
-		//cases for commands go here
-		case "help":
-			fmt.Println("\nhelp not implemented")
-			return
-		case "dbPath":
-			fmt.Printf("\n%s\n", DB.path)
-			return
-		case "timer":
-			fmt.Println("\ntimer not yet implemented")
-			return
-		case "-clear":
-			itemFlags.Parse(commands[1:])
-		case "ls":
-			renderList(DB)
-			return
-		default:
-			itemFlags.Parse(commands[2:])
-		}
+	flags, err := flagService(os.Args, DB, todosList)
+	if err != nil {
+		fmt.Println("\nFailed to init flags")
+		return false, err
 	}
 	//-- End Flag Decleration --
 
 	//Arguments
-	itemDesc := commands[1]
+	
 	//-- End Args --
 
 	//Exploration
-	if *tickFlag {
-		possibleInt, err := strconv.ParseInt(itemDesc, 10, 64)
+	if *flags.tickFlag {
+		possibleInt, err := strconv.ParseInt(flags.nameArg, 10, 64)
 		if err != nil {
 			possibleInt = -1
 		}
 
 		i := slices.IndexFunc(*todosList, func(t *todo) bool {
-			return t.desc == itemDesc
+			return t.desc == flags.nameArg
 		})
 		if i == -1 && possibleInt == -1 {
 			fmt.Println("\nNo item by that name")
-			return
+			return true, nil
 		}
 		if i == -1 && possibleInt != -1 {
 			(*todosList)[possibleInt].tickUntick(DB)
@@ -185,39 +239,39 @@ func main() {
 		todosList, err = renderList(DB)
 		if err != nil {
 			fmt.Println("\nCouldn't get updated list")
-			return
+			return false, err
 		}
 	}
 
-	if *newFlag || !*tickFlag && !*deleteFlag && !*newFlag && !*clearFlag {
+	if *flags.newFlag {
 		i := slices.IndexFunc(*todosList, func(t *todo) bool {
-			return t.desc == itemDesc
+			return t.desc == flags.nameArg
 		})
 		if i != -1 {
-			fmt.Printf("\nItem already exists: %s\n", itemDesc)
-			return
+			fmt.Printf("\nItem already exists: %s\n", flags.nameArg)
+			return true, nil
 		}
-		ni := newTodo(itemDesc)
+		ni := newTodo(flags.nameArg)
 		ni.create(DB)
 		_, err = renderList(DB)
 		if err != nil {
 			fmt.Println("\nCouldn't get updated list")
-			return
+			return false, err
 		}
 	}
 
-	if *deleteFlag {
-		possibleInt, err := strconv.ParseInt(itemDesc, 10, 64)
+	if *flags.deleteFlag {
+		possibleInt, err := strconv.ParseInt(flags.nameArg, 10, 64)
 		if err != nil {
 			possibleInt = -1
 		}
 		i := slices.IndexFunc(*todosList, func(t *todo) bool {
-			return t.desc == itemDesc
+			return t.desc == flags.nameArg
 		})
 
 		if i == -1 && possibleInt == -1 {
 			fmt.Println("\nNo item by that name")
-			return
+			return true, nil
 		}
 
 		if i == -1 && possibleInt != -1 {
@@ -230,18 +284,27 @@ func main() {
 		_, err = renderList(DB)
 		if err != nil {
 			fmt.Println("\nCouldn't get updated list")
-			return
+			return false, err
 		}
 	}
 
-	if *clearFlag {
+	if *flags.clearFlag {
 		for _, td := range *todosList {
 			td.delete(DB)
 		}
 		_, err = renderList(DB)
 		if err != nil {
 			fmt.Println("\nCouldn't get updated list")
-			return
+			return false, err
 		}
+	}
+
+	return true, nil
+}
+
+func main() {
+	_, err := run()
+	if err != nil {
+		fmt.Printf("\nRun failed with: %v", err)
 	}
 }

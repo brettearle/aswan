@@ -2,8 +2,6 @@ package main
 
 import "testing"
 
-
-
 func TestTodo(t *testing.T) {
 	testDB, err := dbInit(`:memory:`)
 	if err != nil {
@@ -39,11 +37,11 @@ func TestTodo(t *testing.T) {
 		if got.done != want {
 			t.Errorf("got %v want %v", got.done, want)
 		}
-	})	
+	})
 	t.Run("delete should return true when successful", func(t *testing.T) {
 		td := newTodo("test")
-		got, _ := td.delete(testDB)	
-		want := true
+		got, _ := td.delete(testDB)
+		var want success = true
 		if got != want {
 			t.Errorf("got %v want %v", got, want)
 		}
@@ -56,11 +54,32 @@ func TestTodo(t *testing.T) {
 		ls, _ := renderList(testDB)
 		got := *ls
 		want := todo{
-			id: 1,
+			id:   1,
 			desc: "test",
 			done: false,
 		}
 		if *got[0] != want {
+			t.Errorf("got %v want %v", got, want)
+		}
+	})
+	t.Run("should only have todos with false left in list after clearDone", func(t *testing.T) {
+		testDB.createTodo(newTodo("test"))
+		testDB.createTodo(newTodo("test1"))
+		ls, err := testDB.getAllTodos()
+		if err != nil {
+			t.Errorf("failed new todo %v", err)
+		}
+		list := *ls
+		list[0].tickUntick(testDB)
+		clearDone(testDB, &list, renderList)
+		clLs, err := testDB.getAllTodos()
+		if err != nil {
+			t.Errorf("failed new todo %v", err)
+		}
+		clearedList := *clLs
+		got := clearedList[0].done
+		want := false
+		if got != want {
 			t.Errorf("got %v want %v", got, want)
 		}
 	})
