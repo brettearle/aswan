@@ -14,9 +14,6 @@ TODO
 
 Will need go toolchain installed.
 
-Fork the repository.
-Clone the forked repository.
-
 ```bash
   go install github.com/brettearle/aswan
 ```
