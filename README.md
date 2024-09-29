@@ -18,9 +18,7 @@ Fork the repository.
 Clone the forked repository.
 
 ```bash
-  git clone git@github.com:YOUR_PROFILE/aswan.git
-  cd aswan
-  go install
+  go install github.com/brettearle/aswan
 ```
 
 ## Documentation
