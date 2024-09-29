@@ -18,6 +18,27 @@ type success bool
 
 type todoList []*todo
 
+func newTodoList() *todoList {
+	return &todoList{}
+}
+
+func (ls *todoList) populate(db *aswanDB) (*todoList, error) {
+	rows, err := db.getAllTodos()
+	if err != nil {
+
+	}
+	var res todoList
+	for rows.Next() {
+		var item todo
+		if err := rows.Scan(&item.id, &item.desc, &item.done); err != nil {
+			fmt.Printf("Scan Error: %v\n", err)
+			return nil, err
+		}
+		res = append(res, &item)
+	}
+	return &res, nil
+}
+
 type todo struct {
 	id   int
 	done bool
@@ -37,7 +58,7 @@ func newTodo(desc string) *todo {
 }
 
 func (i *todo) create(db *aswanDB) (success, error) {
-	res, err := db.createTodo(i)
+	res, err := db.createTodo(i.desc, i.done)
 	if err != nil {
 		fmt.Printf("error: %v", err)
 		return false, err
@@ -67,7 +88,7 @@ func (i *todo) tickUntick(db *aswanDB) (success, error) {
 	} else {
 		i.done = true
 	}
-	_, err := db.updateTodo(i)
+	_, err := db.updateTodo(i.id, i.desc, i.done)
 	if err != nil {
 		fmt.Printf("error: %v", err)
 		return false, err
@@ -80,7 +101,7 @@ type RenderList func(db *aswanDB) (ls *todoList, err error)
 
 func renderList(db *aswanDB) (*todoList, error) {
 	callClear()
-	ls, err := db.getAllTodos()
+	ls, err := newTodoList().populate(db)
 	if err != nil {
 		fmt.Println("failed to get list")
 		return nil, err
@@ -191,7 +212,7 @@ func flagService(
 
 func run(DB *aswanDB) (success, error) {
 	//Initial State
-	todosList, err := DB.getAllTodos()
+	todosList, err := newTodoList().populate(DB)
 	if err != nil {
 		fmt.Println("\nfailed to get todos")
 		return false, err

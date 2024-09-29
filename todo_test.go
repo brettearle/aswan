@@ -63,16 +63,18 @@ func TestTodo(t *testing.T) {
 		}
 	})
 	t.Run("should only have todos with false left in list after clearDone", func(t *testing.T) {
-		testDB.createTodo(newTodo("test"))
-		testDB.createTodo(newTodo("test1"))
-		ls, err := testDB.getAllTodos()
+		testTD := newTodo("test")
+		testTD1 := newTodo("test1")
+		testDB.createTodo(testTD.desc, testTD.done)
+		testDB.createTodo(testTD1.desc, testTD1.done)
+		ls, err := newTodoList().populate(testDB)
 		if err != nil {
 			t.Errorf("failed new todo %v", err)
 		}
 		list := *ls
 		list[0].tickUntick(testDB)
 		clearDone(testDB, &list, renderList)
-		clLs, err := testDB.getAllTodos()
+		clLs, err := newTodoList().populate(testDB)
 		if err != nil {
 			t.Errorf("failed new todo %v", err)
 		}
