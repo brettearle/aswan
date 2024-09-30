@@ -1,9 +1,13 @@
 package main
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/brettearle/aswan/internal/db"
+)
 
 func TestTodo(t *testing.T) {
-	testDB, err := dbInit(`:memory:`)
+	testDB, err := db.DbInit(`:memory:`)
 	if err != nil {
 		t.Errorf("failed to init in mem test db: %s", err)
 	}
@@ -65,8 +69,8 @@ func TestTodo(t *testing.T) {
 	t.Run("should only have todos with false left in list after clearDone", func(t *testing.T) {
 		testTD := newTodo("test")
 		testTD1 := newTodo("test1")
-		testDB.createTodo(testTD.desc, testTD.done)
-		testDB.createTodo(testTD1.desc, testTD1.done)
+		testDB.CreateTodo(testTD.desc, testTD.done)
+		testDB.CreateTodo(testTD1.desc, testTD1.done)
 		ls, err := newTodoList().populate(testDB)
 		if err != nil {
 			t.Errorf("failed new todo %v", err)

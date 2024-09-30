@@ -1,4 +1,4 @@
-package main
+package db
 
 import (
 	"context"
@@ -11,13 +11,13 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-type aswanDB struct {
-	path string
-	db   *sql.DB
+type AswanDB struct {
+	Path string
+	Instance   *sql.DB
 }
 
-func (db *aswanDB) createTodo(desc string, done bool) (sql.Result, error) {
-	res, err := db.db.ExecContext(context.Background(), `INSERT INTO todo (desc, done) VALUES (?,?);`, desc, done)
+func (db *AswanDB) CreateTodo(desc string, done bool) (sql.Result, error) {
+	res, err := db.Instance.ExecContext(context.Background(), `INSERT INTO todo (desc, done) VALUES (?,?);`, desc, done)
 	if err != nil {
 		fmt.Printf("sql Error: %v\n", err)
 		return res, errors.New("could not create todo")
@@ -25,8 +25,8 @@ func (db *aswanDB) createTodo(desc string, done bool) (sql.Result, error) {
 	return res, nil
 }
 
-func (db *aswanDB) deleteTodo(id int) (sql.Result, error) {
-	res, err := db.db.ExecContext(context.Background(), `DELETE FROM todo WHERE id = ?;`, id)
+func (db *AswanDB) DeleteTodo(id int) (sql.Result, error) {
+	res, err := db.Instance.ExecContext(context.Background(), `DELETE FROM todo WHERE id = ?;`, id)
 	if err != nil {
 		fmt.Printf("sql Error: %v\n", err)
 		return res, errors.New("could not delete todo")
@@ -34,8 +34,8 @@ func (db *aswanDB) deleteTodo(id int) (sql.Result, error) {
 	return res, nil
 }
 
-func (db *aswanDB) updateTodo(id int, desc string, done bool) (sql.Result, error) {
-	res, err := db.db.ExecContext(context.Background(), `UPDATE todo SET desc = ?, done = ? WHERE id = ?;`, desc, done, id)
+func (db *AswanDB) UpdateTodo(id int, desc string, done bool) (sql.Result, error) {
+	res, err := db.Instance.ExecContext(context.Background(), `UPDATE todo SET desc = ?, done = ? WHERE id = ?;`, desc, done, id)
 	if err != nil {
 		fmt.Printf("sql Error: %v\n", err)
 		return res, errors.New("could not update todo")
@@ -43,8 +43,8 @@ func (db *aswanDB) updateTodo(id int, desc string, done bool) (sql.Result, error
 	return res, nil
 }
 
-func (db *aswanDB) getAllTodos() (*sql.Rows, error) {
-	rows, err := db.db.Query("SELECT * FROM todo")
+func (db *AswanDB) GetAllTodos() (*sql.Rows, error) {
+	rows, err := db.Instance.Query("SELECT * FROM todo")
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		return nil, err
@@ -52,15 +52,15 @@ func (db *aswanDB) getAllTodos() (*sql.Rows, error) {
 	return rows, nil
 }
 
-func newAswanDB(path string, DB *sql.DB) *aswanDB {
-	db := &aswanDB{
-		path: path,
-		db:   DB,
+func NewAswanDB(path string, DB *sql.DB) *AswanDB {
+	db := &AswanDB{
+		Path: path,
+		Instance:   DB,
 	}
 	return db
 }
 
-func getDBPath() string {
+func GetDBPath() string {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		panic(err)
@@ -79,7 +79,7 @@ func getDBPath() string {
 	return filepath.Join(dbDir, dbFile)
 }
 
-func dbInit(path string) (*aswanDB, error) {
+func DbInit(path string) (*AswanDB, error) {
 	//Init Sqlite
 	db, err := sql.Open("sqlite", path)
 	if err != nil {
@@ -100,6 +100,6 @@ func dbInit(path string) (*aswanDB, error) {
 		return nil, err
 	}
 	//Return new aswan db
-	r := newAswanDB(path, db)
+	r := NewAswanDB(path, db)
 	return r, nil
 }
