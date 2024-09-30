@@ -7,7 +7,7 @@ import (
 )
 
 func TestTodo(t *testing.T) {
-	callClear := func(){}
+	callClear := func() {}
 	testDB, err := db.DbInit(`:memory:`)
 	if err != nil {
 		t.Errorf("failed to init in mem test db: %s", err)
@@ -46,7 +46,7 @@ func TestTodo(t *testing.T) {
 	t.Run("delete should return true when successful", func(t *testing.T) {
 		td := NewTodo("test")
 		got, _ := td.Delete(testDB)
-		var want  = true
+		var want = true
 		if got != want {
 			t.Errorf("got %v want %v", got, want)
 		}

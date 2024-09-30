@@ -12,8 +12,8 @@ import (
 )
 
 type AswanDB struct {
-	Path string
-	Instance   *sql.DB
+	Path     string
+	Instance *sql.DB
 }
 
 func (db *AswanDB) CreateTodo(desc string, done bool) (sql.Result, error) {
@@ -54,8 +54,8 @@ func (db *AswanDB) GetAllTodos() (*sql.Rows, error) {
 
 func NewAswanDB(path string, DB *sql.DB) *AswanDB {
 	db := &AswanDB{
-		Path: path,
-		Instance:   DB,
+		Path:     path,
+		Instance: DB,
 	}
 	return db
 }

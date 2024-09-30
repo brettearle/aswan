@@ -13,7 +13,7 @@ import (
 )
 
 type todoFlags struct {
-	nameArg string
+	nameArg    string
 	itemFlags  *flag.FlagSet
 	newFlag    *bool
 	tickFlag   *bool
@@ -29,7 +29,7 @@ func newTodoFlags(desc string) *todoFlags {
 		tickFlag:   iF.Bool("t", false, "Completes a todo"),
 		deleteFlag: iF.Bool("d", false, "Deletes a todo"),
 		clearFlag:  iF.Bool("clear", false, "Deletes all todos"),
-		nameArg: desc,
+		nameArg:    desc,
 	}
 }
 
@@ -193,7 +193,7 @@ func main() {
 	}
 	defer DB.Instance.Close()
 
-	//RUN RUN RUN 
+	//RUN RUN RUN
 	_, err = run(DB)
 	if err != nil {
 		fmt.Printf("\nRun failed with: %v", err)

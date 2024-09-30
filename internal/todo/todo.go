@@ -91,11 +91,12 @@ func (i *Todo) ChangeDone(db *db.AswanDB) (bool, error) {
 	return true, nil
 }
 
-// List all and Print
 type clearTerminal func()
+
+// List all and Print
 type RenderList func(db *db.AswanDB, clearTerm clearTerminal) (ls *Todolist, err error)
 
-func RenderTodos(db *db.AswanDB, callClear clearTerminal ) (*Todolist, error) {
+func RenderTodos(db *db.AswanDB, callClear clearTerminal) (*Todolist, error) {
 	callClear()
 	ls, err := NewTodoList().Populate(db)
 	if err != nil {
@@ -118,7 +119,12 @@ func RenderTodos(db *db.AswanDB, callClear clearTerminal ) (*Todolist, error) {
 }
 
 // Clear Done
-func ClearDone(db *db.AswanDB, ls *Todolist, render RenderList, clearTerm clearTerminal) (bool, error) {
+func ClearDone(
+	db *db.AswanDB,
+	ls *Todolist,
+	render RenderList,
+	clearTerm clearTerminal,
+) (bool, error) {
 	for _, item := range *ls {
 		if item.Done {
 			_, err := item.Delete(db)
