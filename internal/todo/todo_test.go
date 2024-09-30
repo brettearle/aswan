@@ -1,4 +1,4 @@
-package main
+package todo
 
 import (
 	"testing"
@@ -7,83 +7,84 @@ import (
 )
 
 func TestTodo(t *testing.T) {
+	callClear := func(){}
 	testDB, err := db.DbInit(`:memory:`)
 	if err != nil {
 		t.Errorf("failed to init in mem test db: %s", err)
 	}
 
 	t.Run("new todo has correct desc", func(t *testing.T) {
-		got := newTodo("test")
+		got := NewTodo("test")
 		want := "test"
-		if got.desc != want {
-			t.Errorf("got %s want %s", got.desc, want)
+		if got.Desc != want {
+			t.Errorf("got %s want %s", got.Desc, want)
 		}
 	})
 	t.Run("init with done equal to false", func(t *testing.T) {
-		got := newTodo("test")
+		got := NewTodo("test")
 		want := false
-		if got.done != want {
-			t.Errorf("got %v want %v", got.done, want)
+		if got.Done != want {
+			t.Errorf("got %v want %v", got.Done, want)
 		}
 	})
 	t.Run("create a todo", func(t *testing.T) {
-		got := newTodo("test")
-		got.create(testDB)
+		got := NewTodo("test")
+		got.Create(testDB)
 		want := 1
-		if got.id != want {
-			t.Errorf("got %v want %v", got.id, want)
+		if got.ID != want {
+			t.Errorf("got %v want %v", got.ID, want)
 		}
 	})
 	t.Run("tickUntick should swap value of Done on todo", func(t *testing.T) {
-		got := newTodo("test")
-		got.tickUntick(testDB)
+		got := NewTodo("test")
+		got.ChangeDone(testDB)
 		want := true
-		if got.done != want {
-			t.Errorf("got %v want %v", got.done, want)
+		if got.Done != want {
+			t.Errorf("got %v want %v", got.Done, want)
 		}
 	})
 	t.Run("delete should return true when successful", func(t *testing.T) {
-		td := newTodo("test")
-		got, _ := td.delete(testDB)
-		var want success = true
+		td := NewTodo("test")
+		got, _ := td.Delete(testDB)
+		var want  = true
 		if got != want {
 			t.Errorf("got %v want %v", got, want)
 		}
 	})
 	t.Run("render list should return the correct list", func(t *testing.T) {
-		_, err := newTodo("test").create(testDB)
+		_, err := NewTodo("test").Create(testDB)
 		if err != nil {
 			t.Errorf("failed new todo %v", err)
 		}
-		ls, _ := renderList(testDB)
+		ls, _ := RenderTodos(testDB, callClear)
 		got := *ls
-		want := todo{
-			id:   1,
-			desc: "test",
-			done: false,
+		want := Todo{
+			ID:   1,
+			Desc: "test",
+			Done: false,
 		}
 		if *got[0] != want {
 			t.Errorf("got %v want %v", got, want)
 		}
 	})
 	t.Run("should only have todos with false left in list after clearDone", func(t *testing.T) {
-		testTD := newTodo("test")
-		testTD1 := newTodo("test1")
-		testDB.CreateTodo(testTD.desc, testTD.done)
-		testDB.CreateTodo(testTD1.desc, testTD1.done)
-		ls, err := newTodoList().populate(testDB)
+		testTD := NewTodo("test")
+		testTD1 := NewTodo("test1")
+		testDB.CreateTodo(testTD.Desc, testTD.Done)
+		testDB.CreateTodo(testTD1.Desc, testTD1.Done)
+		ls, err := NewTodoList().Populate(testDB)
 		if err != nil {
 			t.Errorf("failed new todo %v", err)
 		}
 		list := *ls
-		list[0].tickUntick(testDB)
-		clearDone(testDB, &list, renderList)
-		clLs, err := newTodoList().populate(testDB)
+		list[0].ChangeDone(testDB)
+		ClearDone(testDB, &list, RenderTodos, callClear)
+		clLs, err := NewTodoList().Populate(testDB)
 		if err != nil {
 			t.Errorf("failed new todo %v", err)
 		}
 		clearedList := *clLs
-		got := clearedList[0].done
+		got := clearedList[0].Done
 		want := false
 		if got != want {
 			t.Errorf("got %v want %v", got, want)
