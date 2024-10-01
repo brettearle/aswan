@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/brettearle/aswan/internal/db"
+	"github.com/brettearle/aswan/internal/terminal"
 	"github.com/brettearle/aswan/internal/todo"
 )
 
@@ -43,7 +44,7 @@ func flagService(
 	//Commands
 	commands := args
 	if len(commands) == 1 {
-		todo.RenderTodos(db, callClear)
+		todo.RenderTodos(db, terminal.CallClear)
 		return newTodoFlags(""), err
 	}
 
@@ -72,12 +73,12 @@ func flagService(
 			fmt.Println("\ntimer not yet implemented")
 			return flags, nil
 		case "rmDone":
-			todo.ClearDone(db, todosList, todo.RenderTodos, callClear)
+			todo.ClearDone(db, todosList, todo.RenderTodos, terminal.CallClear)
 			return flags, nil
 		case "-clear":
 			flags.itemFlags.Parse(commands[1:])
 		case "ls":
-			todo.RenderTodos(db, callClear)
+			todo.RenderTodos(db, terminal.CallClear)
 			return flags, nil
 		default:
 			flags.itemFlags.Parse(commands[2:])
@@ -119,7 +120,7 @@ func run(db *db.AswanDB) (bool, error) {
 		if possibleInt == -1 && i != -1 {
 			(*todosList)[i].ChangeDone(db)
 		}
-		todosList, err = todo.RenderTodos(db, callClear)
+		todosList, err = todo.RenderTodos(db, terminal.CallClear)
 		if err != nil {
 			fmt.Println("\nCouldn't get updated list")
 			return false, err
@@ -136,7 +137,7 @@ func run(db *db.AswanDB) (bool, error) {
 		}
 		ni := todo.NewTodo(flags.nameArg)
 		ni.Create(db)
-		_, err = todo.RenderTodos(db, callClear)
+		_, err = todo.RenderTodos(db, terminal.CallClear)
 		if err != nil {
 			fmt.Println("\nCouldn't get updated list")
 			return false, err
@@ -164,7 +165,7 @@ func run(db *db.AswanDB) (bool, error) {
 		if possibleInt == -1 && i != -1 {
 			(*todosList)[i].Delete(db)
 		}
-		_, err = todo.RenderTodos(db, callClear)
+		_, err = todo.RenderTodos(db, terminal.CallClear)
 		if err != nil {
 			fmt.Println("\nCouldn't get updated list")
 			return false, err
@@ -175,7 +176,7 @@ func run(db *db.AswanDB) (bool, error) {
 		for _, td := range *todosList {
 			td.Delete(db)
 		}
-		_, err = todo.RenderTodos(db, callClear)
+		_, err = todo.RenderTodos(db, terminal.CallClear)
 		if err != nil {
 			fmt.Println("\nCouldn't get updated list")
 			return false, err
