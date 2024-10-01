@@ -16,8 +16,8 @@ type AswanDB struct {
 	Instance *sql.DB
 }
 
-func (db *AswanDB) CreateTodo(desc string, done bool) (sql.Result, error) {
-	res, err := db.Instance.ExecContext(context.Background(), `INSERT INTO todo (desc, done) VALUES (?,?);`, desc, done)
+func (db *AswanDB) CreateTodo(desc string, done bool, doneTime string) (sql.Result, error) {
+	res, err := db.Instance.ExecContext(context.Background(), `INSERT INTO todo (desc, done, doneTime) VALUES (?,?,?);`, desc, done, doneTime)
 	if err != nil {
 		fmt.Printf("sql Error: %v\n", err)
 		return res, errors.New("could not create todo")
@@ -34,8 +34,8 @@ func (db *AswanDB) DeleteTodo(id int) (sql.Result, error) {
 	return res, nil
 }
 
-func (db *AswanDB) UpdateTodo(id int, desc string, done bool) (sql.Result, error) {
-	res, err := db.Instance.ExecContext(context.Background(), `UPDATE todo SET desc = ?, done = ? WHERE id = ?;`, desc, done, id)
+func (db *AswanDB) UpdateTodo(id int, desc string, done bool, doneTime string) (sql.Result, error) {
+	res, err := db.Instance.ExecContext(context.Background(), `UPDATE todo SET desc = ?, done = ?, doneTime = ? WHERE id = ?;`, desc, done,doneTime, id)
 	if err != nil {
 		fmt.Printf("sql Error: %v\n", err)
 		return res, errors.New("could not update todo")
@@ -92,7 +92,8 @@ func DbInit(path string) (*AswanDB, error) {
 		`CREATE TABLE IF NOT EXISTS todo (
 			id INTEGER PRIMARY KEY AUTOINCREMENT, 
 			desc TEXT NOT NULL, 
-			done BOOLEAN NOT NULL 
+			done BOOLEAN NOT NULL,
+			doneTime TEXT NOT NULL
 		)`,
 	)
 	if err != nil {
