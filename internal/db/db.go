@@ -35,7 +35,7 @@ func (db *AswanDB) DeleteTodo(id int) (sql.Result, error) {
 }
 
 func (db *AswanDB) UpdateTodo(id int, desc string, done bool, doneTime string) (sql.Result, error) {
-	res, err := db.Instance.ExecContext(context.Background(), `UPDATE todo SET desc = ?, done = ?, doneTime = ? WHERE id = ?;`, desc, done,doneTime, id)
+	res, err := db.Instance.ExecContext(context.Background(), `UPDATE todo SET desc = ?, done = ?, doneTime = ? WHERE id = ?;`, desc, done, doneTime, id)
 	if err != nil {
 		fmt.Printf("sql Error: %v\n", err)
 		return res, errors.New("could not update todo")

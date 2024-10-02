@@ -36,9 +36,9 @@ func (ls *Todolist) Populate(db *db.AswanDB) (*Todolist, error) {
 }
 
 type Todo struct {
-	ID   int
-	Done bool
-	Desc string
+	ID       int
+	Done     bool
+	Desc     string
 	DoneTime string
 }
 
@@ -48,8 +48,8 @@ func (t Todo) String() string {
 
 func NewTodo(desc string) *Todo {
 	i := &Todo{
-		Done: false,
-		Desc: desc,
+		Done:     false,
+		Desc:     desc,
 		DoneTime: time.Now().Format(time.RFC822),
 	}
 	return i

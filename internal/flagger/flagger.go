@@ -12,25 +12,24 @@ import (
 	"github.com/brettearle/aswan/internal/todo"
 )
 
-
 type TodoFlags struct {
-	Name    string
-	ItemFlags  *flag.FlagSet
-	New    *bool
-	Tick   *bool
-	Delete *bool
-	Clear  *bool
+	Name      string
+	ItemFlags *flag.FlagSet
+	New       *bool
+	Tick      *bool
+	Delete    *bool
+	Clear     *bool
 }
 
 func newTodoFlags(desc string) *TodoFlags {
 	iF := flag.NewFlagSet("Todo items", flag.ContinueOnError)
 	return &TodoFlags{
-		ItemFlags:  iF,
-		New:    iF.Bool("n", false, "New todo"),
-		Tick:   iF.Bool("t", false, "Completes a todo"),
-		Delete: iF.Bool("d", false, "Deletes a todo"),
-		Clear:  iF.Bool("clear", false, "Deletes all todos"),
-		Name:    desc,
+		ItemFlags: iF,
+		New:       iF.Bool("n", false, "New todo"),
+		Tick:      iF.Bool("t", false, "Completes a todo"),
+		Delete:    iF.Bool("d", false, "Deletes a todo"),
+		Clear:     iF.Bool("clear", false, "Deletes all todos"),
+		Name:      desc,
 	}
 }
 
@@ -57,7 +56,7 @@ func FlagService(
 		fmt.Println("\nPlease provide item string first")
 		fmt.Println("example: `CMD> aswan 'im a item' -n -t`")
 		flags.ItemFlags.PrintDefaults()
-		return nil, err
+		return flags, err
 	}
 
 	if len(commands) > 1 {
@@ -81,96 +80,98 @@ func FlagService(
 			todo.RenderTodos(db, terminal.CallClear)
 			return flags, nil
 		default:
-			flags.ItemFlags.Parse(commands[2:])
+			if len(commands) > 1 {
+				flags.ItemFlags.Parse(commands[2:])
+			}
 		}
 	}
 	return flags, nil
 }
 
-func TickHandler(list *todo.Todolist, flags *TodoFlags, db *db.AswanDB)(*todo.Todolist, error){
-		possibleInt, err := strconv.ParseInt(flags.Name, 10, 64)
-		if err != nil {
-			possibleInt = -1
-		}
+func TickHandler(list *todo.Todolist, flags *TodoFlags, db *db.AswanDB) (*todo.Todolist, error) {
+	possibleInt, err := strconv.ParseInt(flags.Name, 10, 64)
+	if err != nil {
+		possibleInt = -1
+	}
 
-		i := slices.IndexFunc(*list, func(t *todo.Todo) bool {
-			return t.Desc == flags.Name
-		})
-		if i == -1 && possibleInt == -1 {
-			fmt.Println("\nNo item by that name")
-			return list, nil
-		}
-		if i == -1 && possibleInt != -1 {
-			(*list)[possibleInt].ChangeDone(db)
-		}
-		if possibleInt == -1 && i != -1 {
-			(*list)[i].ChangeDone(db)
-		}
-		list, err = todo.RenderTodos(db, terminal.CallClear)
-		if err != nil {
-			fmt.Println("\nCouldn't get updated list")
-			return list, err
-		}
+	i := slices.IndexFunc(*list, func(t *todo.Todo) bool {
+		return t.Desc == flags.Name
+	})
+	if i == -1 && possibleInt == -1 {
+		fmt.Println("\nNo item by that name")
 		return list, nil
+	}
+	if i == -1 && possibleInt != -1 {
+		(*list)[possibleInt].ChangeDone(db)
+	}
+	if possibleInt == -1 && i != -1 {
+		(*list)[i].ChangeDone(db)
+	}
+	list, err = todo.RenderTodos(db, terminal.CallClear)
+	if err != nil {
+		fmt.Println("\nCouldn't get updated list")
+		return list, err
+	}
+	return list, nil
 }
 
-func NewHandler(list *todo.Todolist, flags *TodoFlags, db *db.AswanDB)(*todo.Todolist, error){
-		i := slices.IndexFunc(*list, func(t *todo.Todo) bool {
-			return t.Desc == flags.Name
-		})
-		if i != -1 {
-			fmt.Printf("\nItem already exists: %s\n", flags.Name)
-			return list, nil
-		}
-		ni := todo.NewTodo(flags.Name)
-		ni.Create(db)
-		var err error
-		list, err = todo.RenderTodos(db, terminal.CallClear)
-		if err != nil {
-			fmt.Println("\nCouldn't get updated list")
-			return list, err
-		}
+func NewHandler(list *todo.Todolist, flags *TodoFlags, db *db.AswanDB) (*todo.Todolist, error) {
+	i := slices.IndexFunc(*list, func(t *todo.Todo) bool {
+		return t.Desc == flags.Name
+	})
+	if i != -1 {
+		fmt.Printf("\nItem already exists: %s\n", flags.Name)
 		return list, nil
+	}
+	ni := todo.NewTodo(flags.Name)
+	ni.Create(db)
+	var err error
+	list, err = todo.RenderTodos(db, terminal.CallClear)
+	if err != nil {
+		fmt.Println("\nCouldn't get updated list")
+		return list, err
+	}
+	return list, nil
 }
 
-func DeleteHandler(list *todo.Todolist, flags *TodoFlags, db *db.AswanDB)(*todo.Todolist, error){
-		possibleInt, err := strconv.ParseInt(flags.Name, 10, 64)
-		if err != nil {
-			possibleInt = -1
-		}
-		i := slices.IndexFunc(*list, func(t *todo.Todo) bool {
-			return t.Desc == flags.Name
-		})
+func DeleteHandler(list *todo.Todolist, flags *TodoFlags, db *db.AswanDB) (*todo.Todolist, error) {
+	possibleInt, err := strconv.ParseInt(flags.Name, 10, 64)
+	if err != nil {
+		possibleInt = -1
+	}
+	i := slices.IndexFunc(*list, func(t *todo.Todo) bool {
+		return t.Desc == flags.Name
+	})
 
-		if i == -1 && possibleInt == -1 {
-			fmt.Println("\nNo item by that name")
-			return list, nil
-		}
-
-		if i == -1 && possibleInt != -1 {
-			(*list)[possibleInt].Delete(db)
-		}
-
-		if possibleInt == -1 && i != -1 {
-			(*list)[i].Delete(db)
-		}
-		list, err = todo.RenderTodos(db, terminal.CallClear)
-		if err != nil {
-			fmt.Println("\nCouldn't get updated list")
-			return list, err
-		}
+	if i == -1 && possibleInt == -1 {
+		fmt.Println("\nNo item by that name")
 		return list, nil
+	}
+
+	if i == -1 && possibleInt != -1 {
+		(*list)[possibleInt].Delete(db)
+	}
+
+	if possibleInt == -1 && i != -1 {
+		(*list)[i].Delete(db)
+	}
+	list, err = todo.RenderTodos(db, terminal.CallClear)
+	if err != nil {
+		fmt.Println("\nCouldn't get updated list")
+		return list, err
+	}
+	return list, nil
 }
 
-func ClearHandler(list *todo.Todolist, flags *TodoFlags, db *db.AswanDB)(*todo.Todolist, error){
-		for _, td := range *list {
-			td.Delete(db)
-		}
-		var err error
-		list, err = todo.RenderTodos(db, terminal.CallClear)
-		if err != nil {
-			fmt.Println("\nCouldn't get updated list")
-			return list, err
-		}
-		return list, nil
+func ClearHandler(list *todo.Todolist, flags *TodoFlags, db *db.AswanDB) (*todo.Todolist, error) {
+	for _, td := range *list {
+		td.Delete(db)
+	}
+	var err error
+	list, err = todo.RenderTodos(db, terminal.CallClear)
+	if err != nil {
+		fmt.Println("\nCouldn't get updated list")
+		return list, err
+	}
+	return list, nil
 }

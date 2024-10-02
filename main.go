@@ -9,7 +9,6 @@ import (
 	"github.com/brettearle/aswan/internal/todo"
 )
 
-
 func run(db *db.AswanDB) (bool, error) {
 	//Initial State
 	todosList, err := todo.NewTodoList().Populate(db)
