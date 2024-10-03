@@ -1,6 +1,7 @@
 package todo
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/brettearle/aswan/internal/db"
@@ -34,6 +35,7 @@ func TestTodo(t *testing.T) {
 		if got.ID != want {
 			t.Errorf("got %v want %v", got.ID, want)
 		}
+		got.Delete(testDB)
 	})
 	t.Run("tickUntick should swap value of Done on todo", func(t *testing.T) {
 		got := NewTodo("test")
@@ -57,13 +59,9 @@ func TestTodo(t *testing.T) {
 			t.Errorf("failed new todo %v", err)
 		}
 		ls, _ := RenderTodos(testDB, callClear)
-		got := *ls
-		want := Todo{
-			ID:   1,
-			Desc: "test",
-			Done: false,
-		}
-		if *got[0] != want {
+		got := ls
+		want, _ := NewTodoList().Populate(testDB)
+		if !reflect.DeepEqual(*got, *want) {
 			t.Errorf("got %v want %v", got, want)
 		}
 	})
