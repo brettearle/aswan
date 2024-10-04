@@ -1,6 +1,9 @@
 package timer
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 func TestTimer(t *testing.T) {
 	t.Run("Constructor should return TermPomoTimer", func(t *testing.T) {
@@ -11,8 +14,9 @@ func TestTimer(t *testing.T) {
 			Rounds: 8,
 			LongRest: 15,
 		}
-		if got != want {
+		if !reflect.DeepEqual(got, want) {
 			t.Errorf("got %v wanted %v", got, want)
 		}
 	})	
+	
 }
