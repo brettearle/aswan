@@ -16,23 +16,16 @@ type TermPomoTimer struct {
 }
 
 func (t *TermPomoTimer) Start() {
-	//does it need timer parameters like system etc
 	workStr := strconv.FormatInt(int64(t.Work), 10)
 	duration, err := time.ParseDuration(workStr + "m")
-
 	if err != nil {
 		fmt.Printf("Problem converting %v", err)
 	}
+
 	timer := time.NewTimer(duration)
 	t.CurrentTimers = append(t.CurrentTimers, timer)
 	time.Sleep(duration)
-	//is it work or rest or lrest
-	//work starts at Work
-	//rest starts at Rest
-	//lrest starts at Longrest
-	//set up timer
-	//start process in background
-	//bring forward once timer is up
+	fmt.Printf("Sleep is done: %v", t)
 }
 func (t *TermPomoTimer) Stop()    {}
 func (t *TermPomoTimer) Reset()   {}
