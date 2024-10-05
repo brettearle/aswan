@@ -9,6 +9,7 @@ import (
 
 	"github.com/brettearle/aswan/internal/db"
 	"github.com/brettearle/aswan/internal/terminal"
+	"github.com/brettearle/aswan/internal/timer"
 	"github.com/brettearle/aswan/internal/todo"
 )
 
@@ -69,7 +70,9 @@ func FlagService(
 			fmt.Printf("\n%s\n", db.Path)
 			return flags, nil
 		case "timer":
-			fmt.Println("\ntimer not yet implemented")
+			t := timer.NewTermPomoTimer(10,10,10,10)
+			//Concurrent here maybe???
+			t.Start()
 			return flags, nil
 		case "rmDone":
 			todo.ClearDone(db, todosList, todo.RenderTodos, terminal.CallClear)

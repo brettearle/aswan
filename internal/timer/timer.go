@@ -3,6 +3,7 @@ package timer
 import (
 	"fmt"
 	"strconv"
+	"syscall"
 	"time"
 )
 
@@ -16,6 +17,8 @@ type TermPomoTimer struct {
 }
 
 func (t *TermPomoTimer) Start() {
+	//maybe syscall aswan to start some other process or a instance of a timer server style
+	syscall.Exec("ls", []string{"ls"}, []string{"ls"})
 	workStr := strconv.FormatInt(int64(t.Work), 10)
 	duration, err := time.ParseDuration(workStr + "m")
 	if err != nil {
@@ -24,7 +27,7 @@ func (t *TermPomoTimer) Start() {
 
 	timer := time.NewTimer(duration)
 	t.CurrentTimers = append(t.CurrentTimers, timer)
-	time.Sleep(duration)
+	// time.Sleep(duration)
 	fmt.Printf("Sleep is done: %v", t)
 }
 func (t *TermPomoTimer) Stop()    {}
