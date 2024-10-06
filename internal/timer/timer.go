@@ -30,7 +30,12 @@ func (t *TermPomoTimer) Start() {
 	// time.Sleep(duration)
 	fmt.Printf("Sleep is done: %v", t)
 }
-func (t *TermPomoTimer) Stop() {
+func (t *TermPomoTimer) KillTimers() {
+	if len(t.CurrentTimers) > 1 {
+		for _, ti := range t.CurrentTimers {
+			ti.Stop()
+		}
+	}
 }
 func (t *TermPomoTimer) Reset()   {}
 func (t *TermPomoTimer) Set()     {}
