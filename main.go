@@ -10,7 +10,7 @@ import (
 )
 
 func run(db *db.AswanDB) (bool, error) {
-	//Initial State
+	// Initial State
 	todosList, err := todo.NewTodoList().Populate(db)
 	if err != nil {
 		fmt.Println("\nfailed to get todos")

@@ -30,7 +30,8 @@ func (t *TermPomoTimer) Start() {
 	// time.Sleep(duration)
 	fmt.Printf("Sleep is done: %v", t)
 }
-func (t *TermPomoTimer) Stop()    {}
+func (t *TermPomoTimer) Stop() {
+}
 func (t *TermPomoTimer) Reset()   {}
 func (t *TermPomoTimer) Set()     {}
 func (t *TermPomoTimer) Display() {}
