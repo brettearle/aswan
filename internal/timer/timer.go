@@ -7,13 +7,25 @@ import (
 	"time"
 )
 
+type SetTimer struct {
+	job   string
+	timer *time.Timer
+}
+
+func NewSetTimer(j string, t *time.Timer) *SetTimer {
+	return &SetTimer{
+		job:   j,
+		timer: t,
+	}
+}
+
 // TermPomoTimer is what is used to run pomodoro timer in terminal
 type TermPomoTimer struct {
 	Work          int
 	Rest          int
 	Rounds        int
 	LongRest      int
-	CurrentTimers []*time.Timer
+	CurrentTimers []*SetTimer
 }
 
 func (t *TermPomoTimer) Start() {
@@ -26,19 +38,22 @@ func (t *TermPomoTimer) Start() {
 	}
 
 	timer := time.NewTimer(duration)
-	t.CurrentTimers = append(t.CurrentTimers, timer)
-	// time.Sleep(duration)
+	res := NewSetTimer("work", timer)
+	t.CurrentTimers = append(t.CurrentTimers, res)
 	fmt.Printf("Sleep is done: %v", t)
 }
-func (t *TermPomoTimer) KillTimers() {
+func (t *TermPomoTimer) KillAllTimers() {
 	if len(t.CurrentTimers) > 1 {
 		for _, ti := range t.CurrentTimers {
-			ti.Stop()
+			ti.timer.Stop()
 		}
 	}
 }
-func (t *TermPomoTimer) Reset()   {}
-func (t *TermPomoTimer) Set()     {}
+
+func (t *TermPomoTimer) Stop() {
+
+}
+
 func (t *TermPomoTimer) Display() {}
 
 func NewTermPomoTimer(work int, rest int, rounds int, lngRest int) *TermPomoTimer {
