@@ -64,13 +64,18 @@ func FlagService(
 		switch commands[1] {
 		//cases for commands go here
 		case "help":
-			fmt.Println("\nhelp not implemented")
+			fmt.Println("")
+			fmt.Println("ls - list all todos, this is default")
+			fmt.Println("dbPath - Get path to local db")
+			fmt.Println("rmDone - Remove completed todos")
+			fmt.Println("")
+			flags.ItemFlags.PrintDefaults()
 			return flags, nil
 		case "dbPath":
 			fmt.Printf("\n%s\n", db.Path)
 			return flags, nil
 		case "timer":
-			t := timer.NewTermPomoTimer(10,10,10,10)
+			t := timer.NewTermPomoTimer(10, 10, 10, 10)
 			//Concurrent here maybe???
 			t.Start()
 			return flags, nil

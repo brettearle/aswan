@@ -38,6 +38,7 @@ func (t *TermPomoTimer) Start() {
 
 	timer := time.NewTimer(duration)
 
+	//  TODO: make this not just work
 	res := NewSetTimer("work", timer)
 	t.CurrentTimers = append(t.CurrentTimers, res)
 }
