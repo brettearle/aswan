@@ -61,14 +61,14 @@ func NewAswanDB(path string, DB *sql.DB) *AswanDB {
 }
 
 func GetDBPath() string {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		panic(err)
-	}
+	// homeDir, err := os.UserHomeDir()
+	// if err != nil {
+	// 	panic(err)
+	// }
 
 	// Create the .aswan directory path
-	dbDir := filepath.Join(homeDir, ".aswan")
-
+	// dbDir := filepath.Join(homeDir, ".aswan")
+	dbDir := filepath.Join("./", ".aswan")
 	// Ensure the .aswan directory exists
 	if err := os.MkdirAll(dbDir, os.ModePerm); err != nil {
 		panic(err)
