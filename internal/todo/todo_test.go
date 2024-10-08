@@ -68,8 +68,8 @@ func TestTodo(t *testing.T) {
 	t.Run("should only have todos with false left in list after clearDone", func(t *testing.T) {
 		testTD := NewTodo("test")
 		testTD1 := NewTodo("test1")
-		testDB.CreateTodo(testTD.Desc, testTD.Done, testTD.DoneTime)
-		testDB.CreateTodo(testTD1.Desc, testTD1.Done, testTD1.DoneTime)
+		testDB.CreateTodo(testTD.Desc, testTD.Done, testTD.DoneTime, testTD.Board)
+		testDB.CreateTodo(testTD1.Desc, testTD1.Done, testTD1.DoneTime, testTD1.Board)
 		ls, err := NewTodoList().Populate(testDB)
 		if err != nil {
 			t.Errorf("failed new todo %v", err)
