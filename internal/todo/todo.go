@@ -2,6 +2,7 @@ package todo
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/brettearle/aswan/internal/db"
@@ -26,7 +27,7 @@ func (ls *Todolist) Populate(db *db.AswanDB) (*Todolist, error) {
 	var res Todolist
 	for rows.Next() {
 		var item Todo
-		if err := rows.Scan(&item.ID, &item.Desc, &item.Done, &item.DoneTime); err != nil {
+		if err := rows.Scan(&item.ID, &item.Desc, &item.Done, &item.DoneTime, &item.Board); err != nil {
 			fmt.Printf("Scan Error: %v\n", err)
 			return nil, err
 		}
@@ -40,6 +41,7 @@ type Todo struct {
 	Done     bool
 	Desc     string
 	DoneTime string
+	Board    string
 }
 
 func (t Todo) String() string {
@@ -47,16 +49,22 @@ func (t Todo) String() string {
 }
 
 func NewTodo(desc string) *Todo {
+	wd, err := os.Getwd()
+	if err != nil {
+		fmt.Printf("No WD: %v", err)
+	}
+
 	i := &Todo{
 		Done:     false,
 		Desc:     desc,
 		DoneTime: time.Now().Format(time.RFC822),
+		Board:    wd,
 	}
 	return i
 }
 
 func (i *Todo) Create(db *db.AswanDB) (bool, error) {
-	res, err := db.CreateTodo(i.Desc, i.Done, i.DoneTime)
+	res, err := db.CreateTodo(i.Desc, i.Done, i.DoneTime, i.Board)
 	if err != nil {
 		fmt.Printf("error: %v", err)
 		return false, err
@@ -87,7 +95,7 @@ func (i *Todo) ChangeDone(db *db.AswanDB) (bool, error) {
 		i.Done = true
 		i.DoneTime = time.Now().Format(time.RFC822)
 	}
-	_, err := db.UpdateTodo(i.ID, i.Desc, i.Done, i.DoneTime)
+	_, err := db.UpdateTodo(i.ID, i.Desc, i.Done, i.DoneTime, i.Board)
 	if err != nil {
 		fmt.Printf("error: %v", err)
 		return false, err
@@ -112,7 +120,12 @@ func RenderTodos(db *db.AswanDB, callClear clearTerminal) (*Todolist, error) {
 		return ls, nil
 	}
 	fmt.Println("")
+	wd, _ := os.Getwd()
 	for i, todo := range *ls {
+		fmt.Printf("Table: %v\n", todo.Board)
+		if todo.Board != wd {
+			continue
+		}
 		if todo.Done {
 			fmt.Printf("%s %d: %s %v \n", DONE, i, todo.Desc, todo.DoneTime)
 		} else {

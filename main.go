@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 
@@ -56,29 +55,6 @@ func run(db *db.AswanDB) (bool, error) {
 }
 
 func main() {
-	CWD, err := os.ReadDir("./")
-	if err != nil {
-		fmt.Println("Could no read current Dir")
-		os.Exit(1)
-	}
-
-	dbExists := false
-	for _, file := range CWD {
-		if file.Name() == ".aswan" {
-			dbExists = true
-		}
-	}
-
-	if !dbExists {
-		//DB Initialization
-		reader := bufio.NewReader(os.Stdin)
-		fmt.Println("Would you like to start a list in this directory? y/n")
-		key, err := reader.ReadString('\n')
-		if err != nil || key != "y\n" {
-			fmt.Println("DB not initialised")
-			os.Exit(1)
-		}
-	}
 
 	DB, err := db.DbInit(db.GetDBPath())
 	if err != nil {

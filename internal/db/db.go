@@ -16,8 +16,8 @@ type AswanDB struct {
 	Instance *sql.DB
 }
 
-func (db *AswanDB) CreateTodo(desc string, done bool, doneTime string) (sql.Result, error) {
-	res, err := db.Instance.ExecContext(context.Background(), `INSERT INTO todo (desc, done, doneTime) VALUES (?,?,?);`, desc, done, doneTime)
+func (db *AswanDB) CreateTodo(desc string, done bool, doneTime string, board string) (sql.Result, error) {
+	res, err := db.Instance.ExecContext(context.Background(), `INSERT INTO todo (desc, done, doneTime, board) VALUES (?,?,?,?);`, desc, done, doneTime, board)
 	if err != nil {
 		fmt.Printf("sql Error: %v\n", err)
 		return res, errors.New("could not create todo")
@@ -34,8 +34,8 @@ func (db *AswanDB) DeleteTodo(id int) (sql.Result, error) {
 	return res, nil
 }
 
-func (db *AswanDB) UpdateTodo(id int, desc string, done bool, doneTime string) (sql.Result, error) {
-	res, err := db.Instance.ExecContext(context.Background(), `UPDATE todo SET desc = ?, done = ?, doneTime = ? WHERE id = ?;`, desc, done, doneTime, id)
+func (db *AswanDB) UpdateTodo(id int, desc string, done bool, doneTime string, board string) (sql.Result, error) {
+	res, err := db.Instance.ExecContext(context.Background(), `UPDATE todo SET desc = ?, done = ?, doneTime = ?, board = ? WHERE id = ?;`, desc, done, doneTime, board, id)
 	if err != nil {
 		fmt.Printf("sql Error: %v\n", err)
 		return res, errors.New("could not update todo")
@@ -61,14 +61,14 @@ func NewAswanDB(path string, DB *sql.DB) *AswanDB {
 }
 
 func GetDBPath() string {
-	// homeDir, err := os.UserHomeDir()
-	// if err != nil {
-	// 	panic(err)
-	// }
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
 
 	// Create the .aswan directory path
-	// dbDir := filepath.Join(homeDir, ".aswan")
-	dbDir := filepath.Join("./", ".aswan")
+	dbDir := filepath.Join(homeDir, ".aswan")
+
 	// Ensure the .aswan directory exists
 	if err := os.MkdirAll(dbDir, os.ModePerm); err != nil {
 		panic(err)
@@ -93,11 +93,12 @@ func DbInit(path string) (*AswanDB, error) {
 			id INTEGER PRIMARY KEY AUTOINCREMENT, 
 			desc TEXT NOT NULL, 
 			done BOOLEAN NOT NULL,
-			doneTime TEXT NOT NULL
+			doneTime TEXT NOT NULL,
+			board TEXT NOT NULL
 		)`,
 	)
 	if err != nil {
-		fmt.Printf("Failed to create %v\n", err)
+		fmt.Printf("Failed to create: %v\n", err)
 		return nil, err
 	}
 	//Return new aswan db
