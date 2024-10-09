@@ -121,10 +121,14 @@ func RenderTodos(db *db.AswanDB, callClear clearTerminal) (*Todolist, error) {
 	}
 	fmt.Println("")
 	wd, _ := os.Getwd()
+	var count int8 = 0
 	for i, todo := range *ls {
-		fmt.Printf("\n===== BOARD: %v =====\n", todo.Board)
 		if todo.Board != wd {
 			continue
+		}
+		count++
+		if count == 1 {
+			fmt.Printf("\n===== BOARD: %v =====\n", todo.Board)
 		}
 		if todo.Done {
 			fmt.Printf("%s %d: %s %v \n", DONE, i, todo.Desc, todo.DoneTime)
