@@ -10,6 +10,7 @@ import (
 )
 
 func run(db *db.AswanDB) (bool, error) {
+
 	// Initial State
 	todosList, err := todo.NewTodoList().Populate(db)
 	if err != nil {
@@ -22,6 +23,7 @@ func run(db *db.AswanDB) (bool, error) {
 		fmt.Println("\nFailed to init flags")
 		return false, err
 	}
+
 	//Handlers
 	if *flags.Tick {
 		todosList, err = flagger.TickHandler(todosList, flags, db)
