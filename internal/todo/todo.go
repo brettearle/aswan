@@ -33,7 +33,11 @@ func (ls *Todolist) Populate(db *db.AswanDB) (*Todolist, error) {
 		}
 		res = append(res, &item)
 	}
-	return &res, nil
+	if len(res) >= 0 {
+		return &res, nil
+	} else {
+		panic("res has no length in populate")
+	}
 }
 
 type Todo struct {
