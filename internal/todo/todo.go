@@ -124,6 +124,9 @@ func RenderTodos(db *db.AswanDB, clearTerm clearTerminal, listAll bool) (*Todoli
 		return ls, nil
 	}
 	fmt.Println("")
+	if listAll {
+		fmt.Println("")
+	}
 	wd, _ := os.Getwd()
 	var count int8 = 0
 	for i, todo := range *ls {
