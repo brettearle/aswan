@@ -110,29 +110,31 @@ func (i *Todo) ChangeDone(db *db.AswanDB) (bool, error) {
 type clearTerminal func()
 
 // List all and Print
-type RenderList func(db *db.AswanDB, clearTerm clearTerminal) (ls *Todolist, err error)
+type RenderList func(db *db.AswanDB, clearTerm clearTerminal, listAll bool) (ls *Todolist, err error)
 
-func RenderTodos(db *db.AswanDB, callClear clearTerminal) (*Todolist, error) {
-	callClear()
+func RenderTodos(db *db.AswanDB, clearTerm clearTerminal, listAll bool) (*Todolist, error) {
+	clearTerm()
 	ls, err := NewTodoList().Populate(db)
 	if err != nil {
 		fmt.Println("failed to get list")
 		return nil, err
 	}
 	if len(*ls) == 0 {
-		fmt.Println("No todos")
+		fmt.Println("No items retrieved")
 		return ls, nil
 	}
 	fmt.Println("")
 	wd, _ := os.Getwd()
 	var count int8 = 0
 	for i, todo := range *ls {
-		if todo.Board != wd {
-			continue
-		}
-		count++
-		if count == 1 {
-			fmt.Printf("\n===== BOARD: %v =====\n", todo.Board)
+		if !listAll {
+			if todo.Board != wd {
+				continue
+			}
+			count++
+			if count == 1 {
+				fmt.Printf("\n===== BOARD: %v =====\n", todo.Board)
+			}
 		}
 		if todo.Done {
 			fmt.Printf("%s %d: %s %v \n", DONE, i, todo.Desc, todo.DoneTime)
@@ -140,8 +142,9 @@ func RenderTodos(db *db.AswanDB, callClear clearTerminal) (*Todolist, error) {
 			fmt.Printf("%s %d: %s \n", NOT_DONE, i, todo.Desc)
 		}
 	}
-	if count == 0 {
-		fmt.Println("No todos")
+	if count == 0 && !listAll {
+		fmt.Println("Nothing for this directory")
+		//   TODO:  fmt.Println("Use the render all command")
 		return ls, nil
 	}
 	return ls, nil
@@ -163,6 +166,6 @@ func ClearDone(
 			}
 		}
 	}
-	render(db, clearTerm)
+	render(db, clearTerm, false)
 	return true, nil
 }

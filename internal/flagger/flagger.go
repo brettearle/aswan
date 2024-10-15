@@ -44,7 +44,7 @@ func FlagService(
 	//Commands
 	commands := args
 	if len(commands) == 1 {
-		todo.RenderTodos(db, terminal.CallClear)
+		todo.RenderTodos(db, terminal.CallClear, false)
 		return newTodoFlags(""), err
 	}
 
@@ -85,7 +85,10 @@ func FlagService(
 		case "-clear":
 			flags.ItemFlags.Parse(commands[1:])
 		case "ls":
-			todo.RenderTodos(db, terminal.CallClear)
+			todo.RenderTodos(db, terminal.CallClear, false)
+			return flags, nil
+		case "lsa":
+			todo.RenderTodos(db, terminal.CallClear, true)
 			return flags, nil
 		default:
 			if len(commands) > 1 {
@@ -115,7 +118,7 @@ func TickHandler(list *todo.Todolist, flags *TodoFlags, db *db.AswanDB) (*todo.T
 	if possibleInt == -1 && i != -1 {
 		(*list)[i].ChangeDone(db)
 	}
-	list, err = todo.RenderTodos(db, terminal.CallClear)
+	list, err = todo.RenderTodos(db, terminal.CallClear, false)
 	if err != nil {
 		fmt.Println("\nCouldn't get updated list")
 		return list, err
@@ -134,7 +137,7 @@ func NewHandler(list *todo.Todolist, flags *TodoFlags, db *db.AswanDB) (*todo.To
 	ni := todo.NewTodo(flags.Name)
 	ni.Create(db)
 	var err error
-	list, err = todo.RenderTodos(db, terminal.CallClear)
+	list, err = todo.RenderTodos(db, terminal.CallClear, false)
 	if err != nil {
 		fmt.Println("\nCouldn't get updated list")
 		return list, err
@@ -163,7 +166,7 @@ func DeleteHandler(list *todo.Todolist, flags *TodoFlags, db *db.AswanDB) (*todo
 	if possibleInt == -1 && i != -1 {
 		(*list)[i].Delete(db)
 	}
-	list, err = todo.RenderTodos(db, terminal.CallClear)
+	list, err = todo.RenderTodos(db, terminal.CallClear, false)
 	if err != nil {
 		fmt.Println("\nCouldn't get updated list")
 		return list, err
@@ -176,7 +179,7 @@ func ClearHandler(list *todo.Todolist, flags *TodoFlags, db *db.AswanDB) (*todo.
 		td.Delete(db)
 	}
 	var err error
-	list, err = todo.RenderTodos(db, terminal.CallClear)
+	list, err = todo.RenderTodos(db, terminal.CallClear, false)
 	if err != nil {
 		fmt.Println("\nCouldn't get updated list")
 		return list, err
