@@ -140,6 +140,10 @@ func RenderTodos(db *db.AswanDB, callClear clearTerminal) (*Todolist, error) {
 			fmt.Printf("%s %d: %s \n", NOT_DONE, i, todo.Desc)
 		}
 	}
+	if count == 0 {
+		fmt.Println("No todos")
+		return ls, nil
+	}
 	return ls, nil
 }
 
