@@ -65,8 +65,12 @@ func FlagService(
 		//cases for commands go here
 		case "help":
 			fmt.Println("")
-			fmt.Println("ls - list all todos, this is default")
+			fmt.Println("ls - list all todos for current board, this is default command")
+			fmt.Println("")
+			fmt.Println("lsa - list all todos in the database")
+			fmt.Println("")
 			fmt.Println("dbPath - Get path to local db")
+			fmt.Println("")
 			fmt.Println("rmDone - Remove completed todos")
 			fmt.Println("")
 			flags.ItemFlags.PrintDefaults()
@@ -92,6 +96,10 @@ func FlagService(
 			return flags, nil
 		default:
 			if len(commands) > 1 {
+				flags.ItemFlags.Parse(commands[2:])
+			}
+			if len(commands) == 2 {
+				commands = append(commands, "-t")
 				flags.ItemFlags.Parse(commands[2:])
 			}
 		}
