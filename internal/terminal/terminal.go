@@ -6,7 +6,7 @@ import (
 	"runtime"
 )
 
-var clear map[string]func() //create a map for storing clear funcs
+var clear map[string]func()
 
 func init() {
 	clear = make(map[string]func()) //Initialize it
@@ -20,13 +20,18 @@ func init() {
 		cmd.Stdout = os.Stdout
 		cmd.Run()
 	}
+	clear["darwin"] = func() {
+		cmd := exec.Command("clear")
+		cmd.Stdout = os.Stdout
+		cmd.Run()
+	}
 }
 
 func CallClear() {
 	value, ok := clear[runtime.GOOS] //runtime.GOOS -> linux, windows, darwin etc.
-	if ok {                          //if we defined a clear func for that platform:
-		value() //we execute it
-	} else { //unsupported platform
+	if ok {
+		value()
+	} else {
 		panic("Your platform is unsupported! I can't clear terminal screen :(")
 	}
 }
